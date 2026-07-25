@@ -4,4 +4,6 @@ notebooks/
 raw_zip_files/
 scripts/
 database/
+**/.wrangler/
+node_modules/
 .DS_Store

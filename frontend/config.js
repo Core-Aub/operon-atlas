@@ -1,4 +1,4 @@
-export const API_BASE = "http://localhost:8787";
+export const API_BASE = "";
 
 export const STABLE_OPERON_ID_DIGITS = 6;
 export const OCCURRENCE_ID_DIGITS = 6;

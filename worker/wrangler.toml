@@ -1,0 +1,9 @@
+name = "operonatlas-api"
+main = "src/main.py"
+compatibility_date = "2026-07-25"
+compatibility_flags = ["python_workers", "disable_python_external_sdk"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "operons-sample"
+database_id = "c4a9b23a-fd08-45b6-9d9c-bf40d8d5fe33"
