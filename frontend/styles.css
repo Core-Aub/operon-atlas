@@ -1,0 +1,1147 @@
+:root {
+  color-scheme: light;
+  --bg: #ffffff; /* page background */
+  --sidebar: #426f91; /* matte blue primary accent / navigation */
+  --sidebar-muted: #d8e6ef; /* light text on matte blue navigation */
+  --surface: #ffffff; /* main panels and tables */
+  --surface-soft: #edf5fa; /* light blue secondary accent */
+  --text: #1f2933; /* primary body text */
+  --muted: #617486; /* muted helper text */
+  --border: #d5e1e8; /* subtle blue-gray borders */
+  --accent: #426f91; /* matte blue primary accent */
+  --accent-light: #edf5fa; /* light blue secondary accent */
+  --accent-dark: #315875; /* darker matte blue hover state */
+  --link: #315875; /* links */
+  --danger: #9f1239; /* error text */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* font-family: sans-serif; */
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--link);
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 228px;
+  padding: 35px 18px;
+  background: var(--sidebar);
+  color: #ffffff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-right: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 19px;
+  text-decoration: none;
+}
+
+.nav {
+  display: grid;
+  gap: 0;
+  margin-top: 70px;
+}
+
+.nav a {
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--sidebar-muted);
+  font-weight: 600;
+  text-decoration: none;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.nav a:last-child {
+  border-bottom: none;
+}
+
+.nav a:hover,
+.nav a.active {
+  color: #ffffff;
+}
+
+.main {
+  min-height: 100vh;
+  margin-left: 228px;
+  padding: 36px;
+}
+
+.content {
+  width: min(1180px, 100%);
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.home-section {
+  width: min(820px, 100%);
+}
+
+.home-intro {
+  margin-bottom: 46px;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(1180px, 100%);
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.page-header h2 {
+  margin-bottom: 0;
+}
+
+.page-header h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(1180px, 100%);
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.section-header h2 {
+  margin-bottom: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  color: var(--accent);
+  font-weight: 400;
+  margin-bottom: 10px;
+  /* font-size: clamp(30px, 4vw, 44px); */
+  font-size: 35px;
+  line-height: 1.12;
+}
+
+h2 {
+  color: var(--accent);
+  font-weight: 400;
+  margin-bottom: 12px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+h3 {
+  color: var(--accent);
+  font-weight: 400;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.lede {
+  max-width: 820px;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.home-panel {
+  width: min(820px, 100%);
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.panel-body {
+  padding: 18px;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--accent-light);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+tr:last-child th,
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.summary-panel th {
+  width: 230px;
+}
+
+.functional-summary-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: min(1180px, 100%);
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.functional-summary-header h2 {
+  margin-bottom: 0;
+}
+
+.info-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  outline: none;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tooltip-content {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: none;
+  width: min(420px, calc(100vw - 72px));
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 26px rgba(31, 41, 51, 0.14);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-transform: none;
+  transform: translateX(-50%);
+}
+
+.tooltip-content ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tooltip-content li + li {
+  margin-top: 6px;
+}
+
+.info-tooltip:hover .tooltip-content,
+.info-tooltip:focus .tooltip-content {
+  display: block;
+}
+
+.functional-summary-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.functional-summary-subsection {
+  display: grid;
+  gap: 10px;
+}
+
+.functional-summary-subsection h3 {
+  width: min(1180px, 100%);
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  /* border-bottom: 1px solid var(--border); */
+  color: var(--accent);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.functional-summary-panel {
+  overflow: visible;
+}
+
+.functional-summary-panel .table-wrap {
+  overflow-x: auto;
+}
+
+.functional-summary-table {
+  min-width: 720px;
+}
+
+.functional-summary-table th,
+.functional-summary-table td {
+  vertical-align: top;
+}
+
+.functional-summary-table th {
+  overflow-wrap: anywhere;
+}
+
+.functional-summary-table td.numeric {
+  text-align: right;
+}
+
+.coverage-summary-table th {
+  width: 340px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.coverage-summary-table td {
+  width: 220px;
+  text-align: right;
+  font-weight: 400;
+}
+
+.functional-summary-type {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.functional-summary-cell {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.functional-summary-primary {
+  color: var(--text);
+  font-weight: 400;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.functional-summary-primary .table-link,
+.annotation-value .table-link,
+.annotation-inline-values .table-link {
+  color: var(--accent);
+}
+
+.functional-summary-id,
+.annotation-id {
+  white-space: nowrap;
+}
+
+.functional-summary-separator {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.annotation-separator {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.functional-summary-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 4px 10px;
+}
+
+.functional-summary-link-list .table-link {
+  white-space: nowrap;
+}
+
+.functional-summary-secondary,
+.functional-summary-muted {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.functional-summary-empty {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.annotation-label {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.gene-table {
+  min-width: 940px;
+  table-layout: fixed;
+}
+
+.gene-table th:nth-child(1),
+.gene-table td:nth-child(1) {
+  width: 13%;
+}
+
+.gene-table th:nth-child(2),
+.gene-table td:nth-child(2) {
+  width: 43%;
+}
+
+.gene-table th:nth-child(3),
+.gene-table td:nth-child(3) {
+  width: 15%;
+}
+
+.gene-table th:nth-child(4),
+.gene-table td:nth-child(4) {
+  width: 19%;
+}
+
+.gene-table th:nth-child(5),
+.gene-table td:nth-child(5) {
+  width: 10%;
+}
+
+.gene-table tbody td {
+  border-bottom-style: dotted;
+}
+
+.gene-name span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gene-position {
+  white-space: nowrap;
+}
+
+.annotation-cell {
+  white-space: normal;
+}
+
+.annotation-stack {
+  display: grid;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.annotation-section {
+  display: grid;
+  gap: 3px;
+}
+
+.annotation-values {
+  display: grid;
+  gap: 5px;
+}
+
+.annotation-entry {
+  min-width: 0;
+}
+
+.annotation-value {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.annotation-value.primary {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.annotation-secondary,
+.annotation-empty,
+.annotation-more {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.annotation-secondary,
+.annotation-value {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.annotation-inline-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.annotation-inline-values span {
+  white-space: nowrap;
+}
+
+.annotation-more {
+  width: max-content;
+}
+
+.annotation-more summary {
+  width: max-content;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.annotation-more-body {
+  display: grid;
+  max-height: 220px;
+  overflow-y: auto;
+  gap: 5px;
+  padding-top: 6px;
+}
+
+.annotation-more-body.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.button,
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button:hover,
+button:hover {
+  border-color: var(--accent);
+}
+
+.button.primary:hover {
+  background: var(--accent-dark);
+}
+
+.button.disabled,
+button:disabled,
+.pager-button.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-width: 34px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.operon-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.search-form input {
+  width: min(420px, calc(100vw - 72px));
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 9px;
+}
+
+.filters {
+  position: relative;
+}
+
+.filters-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.filters-button:hover {
+  color: var(--text);
+}
+
+.filters-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  left: 0;
+  display: none;
+  width: min(420px, calc(100vw - 72px));
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.filters-menu.open {
+  display: block;
+}
+
+.filters-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.filters-grid {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.filters-grid label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.filters-grid input,
+.filters-grid select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  text-transform: none;
+}
+
+.filters-grid input {
+  padding: 6px 9px;
+}
+
+.filters-grid select {
+  padding: 6px 8px;
+}
+
+.filters-grid .toggle-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters-grid .toggle-filter input {
+  width: 16px;
+  min-height: 16px;
+  padding: 0;
+}
+
+.filters-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 0 12px;
+  background: transparent;
+}
+
+.pager-button {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.pager-button:hover {
+  color: var(--accent-dark);
+}
+
+.pager-current,
+.pager-range {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.return-link,
+.table-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.table-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+
+.table-link .link-arrow {
+  width: 0.82em;
+  height: 0.82em;
+  flex: 0 0 auto;
+  color: currentColor;
+  stroke-width: 2.4;
+}
+
+.table-link span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sort-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.sort-link:hover,
+.sort-link.active {
+  color: var(--accent);
+}
+
+.sort-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.return-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.return-link .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.return-link:hover,
+.table-link:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.gene-viewer {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.gene-viewer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-light);
+}
+
+.viewer-button {
+  min-height: 30px;
+  padding: 5px 9px;
+  font-size: 13px;
+}
+
+.viewer-status {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.viewer-status-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.gene-contig-status {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.gene-window {
+  padding: 18px 0;
+}
+
+.gene-svg {
+  display: block;
+  width: 100%;
+  min-width: 1000px;
+  max-width: none;
+  height: auto;
+}
+
+.genome-viewer {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.genome-window {
+  padding: 8px 0 4px;
+}
+
+.genome-svg {
+  display: block;
+  width: 100%;
+  min-width: 1000px;
+  max-width: none;
+  height: auto;
+}
+
+.genome-contig-status {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.genome-occurrence-link {
+  cursor: pointer;
+}
+
+.genome-occurrence {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.2;
+}
+
+.genome-occurrence-link:hover .genome-occurrence,
+.genome-occurrence-link:focus .genome-occurrence {
+  stroke: var(--accent-dark);
+  stroke-width: 1.8;
+}
+
+.gene-track {
+  stroke: #8caabd;
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+}
+
+.gene-arrow {
+  stroke: none;
+}
+
+.gene-color-0 {
+  fill: #2563eb;
+}
+
+.gene-color-1 {
+  fill: #f97316;
+}
+
+.gene-color-2 {
+  fill: #16a34a;
+}
+
+.gene-color-3 {
+  fill: #7c3aed;
+}
+
+.gene-color-4 {
+  fill: #0891b2;
+}
+
+.gene-color-5 {
+  fill: #db2777;
+}
+
+.gene-color-6 {
+  fill: #4f46e5;
+}
+
+.gene-color-7 {
+  fill: #ca8a04;
+}
+
+.gene-color-8 {
+  fill: #0d9488;
+}
+
+.gene-color-9 {
+  fill: #dc2626;
+}
+
+.genome-occurrence-color-0 {
+  fill: #2563eb;
+}
+
+.genome-occurrence-color-1 {
+  fill: #f97316;
+}
+
+.genome-occurrence-color-2 {
+  fill: #16a34a;
+}
+
+.genome-occurrence-color-3 {
+  fill: #7c3aed;
+}
+
+.genome-occurrence-color-4 {
+  fill: #0891b2;
+}
+
+.genome-occurrence-color-5 {
+  fill: #db2777;
+}
+
+.genome-occurrence-color-6 {
+  fill: #4f46e5;
+}
+
+.genome-occurrence-color-7 {
+  fill: #ca8a04;
+}
+
+.genome-occurrence-color-8 {
+  fill: #0d9488;
+}
+
+.genome-occurrence-color-9 {
+  fill: #dc2626;
+}
+
+.gene-label {
+  fill: #17212b;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.gene-label-reverse {
+  fill: #334155;
+}
+
+.empty,
+.error,
+.loading {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.error {
+  border-color: #fecdd3;
+  color: var(--danger);
+}
+
+@media (max-width: 820px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+    padding: 14px;
+  }
+
+  .nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 14px;
+  }
+
+  .nav a {
+    text-align: center;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 16px;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+
+  .gene-viewer-toolbar {
+    align-items: flex-start;
+  }
+
+  .gene-viewer-toolbar .button-row,
+  .viewer-status-group {
+    width: 100%;
+  }
+
+  .viewer-status-group {
+    justify-content: flex-start;
+  }
+}

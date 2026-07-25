@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OperonAtlas</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css?v=37">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="#home" aria-label="OperonAtlas home">
+        <span>OperonAtlas</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#operons?page=1" data-route="operons">Operons</a>
+        <a href="#genomes?page=1" data-route="genomes">Genomes</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div id="app" class="content" aria-live="polite"></div>
+    </main>
+
+    <script type="module" src="app.js?v=38"></script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+import { fetchJson } from "../api.js";
+import { app } from "../dom.js";
+import {
+  getCurrentRouteKey,
+  isCurrentRoute,
+} from "../routing/route-state.js";
+import {
+  pageHeader,
+  renderInfoTable,
+  returnLink,
+  sectionHeader,
+} from "../components/layout.js";
+import { renderTableLink } from "../components/links.js";
+import {
+  renderGeneTableRows,
+  renderGeneViewer,
+  setGeneViewerGenes,
+} from "../viewers/gene-viewer.js";
+import {
+  buildOccurrenceFunctionalSummary,
+  formatAnnotatedGeneCoverage,
+  renderOccurrenceFunctionalSummary,
+} from "../components/occurrence-functional-summary.js?v=7";
+import { escapeHtml } from "../utils/html.js";
+import {
+  formatNumber,
+  formatOccurrenceId,
+  formatStableOperonId,
+} from "../utils/format.js";
+
+export async function renderOccurrenceDetail(occurrenceId, routeKey = getCurrentRouteKey()) {
+  const data = await fetchJson(`/api/occurrences/${encodeURIComponent(occurrenceId)}`);
+  if (!isCurrentRoute(routeKey)) {
+    return;
+  }
+  setGeneViewerGenes(data.genes || []);
+  const functionalSummary = buildOccurrenceFunctionalSummary(data.genes || []);
+
+  app.innerHTML = `
+    <section class="section">
+      ${pageHeader(
+        `${data.occurrence_display_id || formatOccurrenceId(data.occurrence_id)}`,
+        returnLink("#operons?page=1"),
+      )}
+
+      <div class="section">
+        ${renderInfoTable([
+          ["Stable Operon ID", renderTableLink(`#operons/${data.operon_id}?page=1`, data.stable_display_id || formatStableOperonId(data.operon_id))],
+          ["Genome ID", renderTableLink(`#genomes/${data.genome_key}?page=1`, data.genome_id)],
+          ["Organism", escapeHtml(data.organism_name || "")],
+          ["Gene count", formatNumber(data.gene_count)],
+          ["Annotated genes", formatAnnotatedGeneCoverage(functionalSummary)],
+        ])}
+      </div>
+
+      <div class="section">
+        <h2>Operon view</h2>
+        <div class="panel">
+          <div class="gene-viewer">
+            ${renderGeneViewer()}
+          </div>
+        </div>
+      </div>
+
+      <div class="section functional-evidence-section">
+        ${renderOccurrenceFunctionalSummary(functionalSummary)}
+      </div>
+
+      <div class="section">
+        ${sectionHeader("Genes")}
+        <div class="panel">
+          <div class="table-wrap">
+            <table class="gene-table">
+              <thead>
+                <tr>
+                  <th>Gene</th>
+                  <th>Annotation</th>
+                  <th>PGFam</th>
+                  <th>Position</th>
+                  <th>Length</th>
+                </tr>
+              </thead>
+              <tbody data-gene-table-body>
+                ${renderGeneTableRows()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}

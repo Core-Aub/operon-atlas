@@ -1,0 +1,7 @@
+collab_data/
+genome_ids/
+notebooks/
+raw_zip_files/
+scripts/
+database/
+.DS_Store
