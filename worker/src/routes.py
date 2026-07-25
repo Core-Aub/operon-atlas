@@ -19,6 +19,11 @@ from db import (
     parse_page,
     stats,
 )
+from downloads import (
+    DownloadsError,
+    get_download_file_response,
+    get_download_manifest,
+)
 
 
 CORS_HEADERS = {
@@ -42,6 +47,20 @@ async def route_request(request, env):
 
     if path_parts == ["api", "health"]:
         return json_response({"ok": True})
+
+    if path_parts[:2] == ["api", "downloads"]:
+        try:
+            downloads = env.DOWNLOADS
+        except Exception:
+            return json_response({"error": "Downloads bucket binding is not configured"}, 500)
+
+        try:
+            return await route_downloads(path_parts, downloads)
+        except DownloadsError as exc:
+            return json_response({"error": exc.message}, exc.status)
+        except Exception as exc:
+            print(f"Downloads request failed: {exc}")
+            return json_response({"error": "Downloads error"}, 500)
 
     try:
         db = env.DB
@@ -133,6 +152,20 @@ async def route_api(path_parts, query, page, db):
         if payload is None:
             return json_response({"error": "Genome not found"}, 404)
         return json_response(payload)
+
+    return json_response({"error": "Not found"}, 404)
+
+
+async def route_downloads(path_parts, downloads):
+    if path_parts == ["api", "downloads"]:
+        return json_response(await get_download_manifest(downloads))
+
+    if (
+        len(path_parts) == 6
+        and path_parts[:3] == ["api", "downloads", "releases"]
+        and path_parts[4] == "files"
+    ):
+        return await get_download_file_response(downloads, path_parts[3], path_parts[5])
 
     return json_response({"error": "Not found"}, 404)
 

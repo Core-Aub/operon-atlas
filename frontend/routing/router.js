@@ -1,4 +1,5 @@
 import { app, navLinks } from "../dom.js";
+import { renderDownloads } from "../pages/downloads.js";
 import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js";
 import { renderHome } from "../pages/home.js?v=1";
 import { renderOccurrenceDetail } from "../pages/occurrence.js?v=6";
@@ -21,6 +22,8 @@ export async function renderRoute() {
   try {
     if (route === "home") {
       await renderHome(routeKey);
+    } else if (route === "downloads" && parts.length === 1) {
+      await renderDownloads(routeKey);
     } else if (route === "operons" && parts.length === 1) {
       await renderOperons(getPage(params), params, routeKey);
     } else if (route === "operons" && parts.length === 2) {

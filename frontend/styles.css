@@ -441,6 +441,20 @@ tr:last-child td {
   white-space: nowrap;
 }
 
+.downloads-table {
+  min-width: 980px;
+}
+
+.checksum {
+  display: block;
+  max-width: 260px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 .annotation-label {
   color: var(--accent);
   font-size: 11px;
@@ -1111,7 +1125,7 @@ button:disabled,
   }
 
   .nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-top: 14px;
   }
 
