@@ -1,6 +1,6 @@
 import { app, navLinks } from "../dom.js";
 import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js";
-import { renderHome } from "../pages/home.js";
+import { renderHome } from "../pages/home.js?v=1";
 import { renderOccurrenceDetail } from "../pages/occurrence.js?v=6";
 import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=6";
 import { getPage, parseHash } from "./hash.js";

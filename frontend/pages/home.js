@@ -32,6 +32,19 @@ export async function renderHome(routeKey) {
         </div>
       </div>
     </section>
+
+    <section class="section home-section">
+      <div class="section-header">
+        <h2>Reference</h2>
+      </div>
+      <div class="panel home-panel">
+        <div class="panel-body">
+          <p class="reference-note">
+            A reference for OperonAtlas will be added when the associated work is published.
+          </p>
+        </div>
+      </div>
+    </section>
   `;
 
   try {

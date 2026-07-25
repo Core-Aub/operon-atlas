@@ -178,6 +178,10 @@ h3 {
   font-size: 16px;
 }
 
+.reference-note {
+  margin-bottom: 0;
+}
+
 .home-panel {
   width: min(820px, 100%);
 }
@@ -1107,7 +1111,7 @@ button:disabled,
   }
 
   .nav {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 14px;
   }
 
