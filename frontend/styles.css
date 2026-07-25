@@ -1,17 +1,17 @@
 :root {
   color-scheme: light;
   --bg: #ffffff; /* page background */
-  --sidebar: #426f91; /* matte blue primary accent / navigation */
-  --sidebar-muted: #d8e6ef; /* light text on matte blue navigation */
+  --sidebar: #3f735d; /* matte green primary accent / navigation */
+  --sidebar-muted: #d8e9e0; /* light text on green navigation */
   --surface: #ffffff; /* main panels and tables */
-  --surface-soft: #edf5fa; /* light blue secondary accent */
-  --text: #1f2933; /* primary body text */
-  --muted: #617486; /* muted helper text */
-  --border: #d5e1e8; /* subtle blue-gray borders */
-  --accent: #426f91; /* matte blue primary accent */
-  --accent-light: #edf5fa; /* light blue secondary accent */
-  --accent-dark: #315875; /* darker matte blue hover state */
-  --link: #315875; /* links */
+  --surface-soft: #edf6f1; /* light green secondary accent */
+  --text: #1f2d27; /* primary body text */
+  --muted: #61786d; /* muted helper text */
+  --border: #d4e3db; /* subtle green-gray borders */
+  --accent: #3f735d; /* matte green primary accent */
+  --accent-light: #edf6f1; /* light green secondary accent */
+  --accent-dark: #2f5a47; /* darker green hover state */
+  --link: #2f5a47; /* links */
   --danger: #9f1239; /* error text */
 }
 
