@@ -20,7 +20,11 @@ import {
   buildOccurrenceFunctionalSummary,
   formatAnnotatedGeneCoverage,
   renderOccurrenceFunctionalSummary,
-} from "../components/occurrence-functional-summary.js?v=7";
+} from "../components/occurrence-functional-summary.js?v=8";
+import {
+  COLUMN_INFO,
+  renderColumnHeader,
+} from "../components/table-header.js";
 import { escapeHtml } from "../utils/html.js";
 import {
   formatNumber,
@@ -73,11 +77,11 @@ export async function renderOccurrenceDetail(occurrenceId, routeKey = getCurrent
             <table class="gene-table">
               <thead>
                 <tr>
-                  <th>Gene</th>
-                  <th>Annotation</th>
-                  <th>PGFam</th>
-                  <th>Position</th>
-                  <th>Length</th>
+                  <th>${renderColumnHeader("Gene", COLUMN_INFO.GENE_LOCUS_ID)}</th>
+                  <th>${renderColumnHeader("Annotation", COLUMN_INFO.GENE_FUNCTIONAL_EVIDENCE)}</th>
+                  <th>${renderColumnHeader("PGFam", COLUMN_INFO.PROTEIN_FAMILY_ID)}</th>
+                  <th>${renderColumnHeader("Position", COLUMN_INFO.CONTIG_GENOMIC_COORDINATES)}</th>
+                  <th>${renderColumnHeader("Length", COLUMN_INFO.GENE_LENGTH_BASES)}</th>
                 </tr>
               </thead>
               <tbody data-gene-table-body>

@@ -5,6 +5,10 @@ import { app } from "../dom.js";
 import { isCurrentRoute } from "../routing/route-state.js";
 import { formatNumber } from "../utils/format.js";
 import { emptyTableRow, escapeHtml } from "../utils/html.js";
+import {
+  COLUMN_INFO,
+  renderColumnHeader,
+} from "../components/table-header.js";
 
 
 export async function renderDownloads(routeKey) {
@@ -31,13 +35,13 @@ export async function renderDownloads(routeKey) {
             <table class="downloads-table">
               <thead>
                 <tr>
-                  <th>Dataset</th>
-                  <th>Description</th>
-                  <th>Format</th>
-                  <th>Rows</th>
-                  <th>Size</th>
-                  <th>SHA-256</th>
-                  <th>Download</th>
+                  <th>${renderColumnHeader("Dataset", COLUMN_INFO.EXPORT_DATASET_NAME)}</th>
+                  <th>${renderColumnHeader("Description", COLUMN_INFO.DATASET_CONTENTS_SUMMARY)}</th>
+                  <th>${renderColumnHeader("Format", COLUMN_INFO.ARCHIVE_FILE_FORMAT)}</th>
+                  <th>${renderColumnHeader("Rows", COLUMN_INFO.EXPORTED_ROW_COUNT)}</th>
+                  <th>${renderColumnHeader("Size", COLUMN_INFO.COMPRESSED_FILE_SIZE)}</th>
+                  <th>${renderColumnHeader("SHA-256", COLUMN_INFO.FILE_INTEGRITY_CHECKSUM)}</th>
+                  <th>${renderColumnHeader("Download", COLUMN_INFO.DATASET_DOWNLOAD_LINK)}</th>
                 </tr>
               </thead>
               <tbody>
@@ -55,9 +59,9 @@ export async function renderDownloads(routeKey) {
             <table>
               <thead>
                 <tr>
-                  <th>File</th>
-                  <th>Description</th>
-                  <th>Download</th>
+                  <th>${renderColumnHeader("File", COLUMN_INFO.DOCUMENTATION_FILE_NAME)}</th>
+                  <th>${renderColumnHeader("Description", COLUMN_INFO.FILE_CONTENTS_SUMMARY)}</th>
+                  <th>${renderColumnHeader("Download", COLUMN_INFO.DOCUMENTATION_DOWNLOAD_LINK)}</th>
                 </tr>
               </thead>
               <tbody>

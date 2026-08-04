@@ -124,6 +124,23 @@ def parse_genome_search(query):
     return normalize_search_text(values.get("search", [None])[0])
 
 
+def parse_genome_sort(query):
+    values = parse_qs(query)
+    sort = values.get("sort", ["genome_id"])[0]
+    direction = values.get("direction", ["asc"])[0].lower()
+    sort_columns = {
+        "genome_id": "gi.genome_id COLLATE NOCASE",
+        "organism_name": "gi.organism_name COLLATE NOCASE",
+        "operon_count": "operon_count",
+        "gene_count": "gene_count",
+    }
+    if sort not in sort_columns:
+        sort = "genome_id"
+    if direction not in {"asc", "desc"}:
+        direction = "asc"
+    return sort, sort_columns[sort], direction.upper()
+
+
 def parse_occurrence_filters(query):
     values = parse_qs(query)
     return {
@@ -690,8 +707,9 @@ def get_occurrence(conn, occurrence_id):
     return payload
 
 
-def browse_genomes(conn, page, search):
+def browse_genomes(conn, page, search, sort):
     offset = (page - 1) * PAGE_SIZE
+    sort_key, sort_column, sort_direction = sort
     where_sql = ""
     params = []
     if search is not None:
@@ -724,7 +742,7 @@ def browse_genomes(conn, page, search):
           ) AS gene_count
         FROM genomes gi
         {where_sql}
-        ORDER BY gi.genome_key
+        ORDER BY {sort_column} {sort_direction}, gi.genome_key ASC
         LIMIT ? OFFSET ?
         """,
         (*params, PAGE_SIZE, offset),
@@ -734,6 +752,8 @@ def browse_genomes(conn, page, search):
         "pageSize": PAGE_SIZE,
         "total": total,
         "search": search or "",
+        "sort": sort_key,
+        "direction": sort_direction.lower(),
         "items": [row_to_dict(row) for row in rows],
     }
 
@@ -1104,7 +1124,12 @@ class OperonAtlasHandler(BaseHTTPRequestHandler):
             return payload, 200
 
         if path_parts == ["api", "genomes"]:
-            return browse_genomes(conn, page, parse_genome_search(query)), 200
+            return browse_genomes(
+                conn,
+                page,
+                parse_genome_search(query),
+                parse_genome_sort(query),
+            ), 200
 
         if len(path_parts) == 3 and path_parts[:2] == ["api", "genomes"]:
             genome_key = parse_int(path_parts[2])

@@ -7,6 +7,15 @@ export const DEFAULT_OPERON_SORT = "occurrence_count";
 export const DEFAULT_OPERON_SORT_DIRECTION = "desc";
 export const OPERON_SORT_FIELDS = new Set(["operon_id", "gene_count", "occurrence_count"]);
 
+export const DEFAULT_GENOME_SORT = "genome_id";
+export const DEFAULT_GENOME_SORT_DIRECTION = "asc";
+export const GENOME_SORT_FIELDS = new Set([
+  "genome_id",
+  "organism_name",
+  "operon_count",
+  "gene_count",
+]);
+
 export const GENE_VIEWER_MIN_SIZE = 2;
 export const GENE_VIEWER_MAX_SIZE = 60;
 export const GENE_VIEWER_ZOOM_STEP = 2;

@@ -13,6 +13,7 @@ from db import (
     genome_operons,
     organisms,
     parse_genome_search,
+    parse_genome_sort,
     parse_occurrence_filters,
     parse_operon_filters,
     parse_operon_sort,
@@ -110,7 +111,14 @@ async def route_api(path_parts, query, page, db):
         return json_response(payload)
 
     if path_parts == ["api", "genomes"]:
-        return json_response(await browse_genomes(db, page, parse_genome_search(query)))
+        return json_response(
+            await browse_genomes(
+                db,
+                page,
+                parse_genome_search(query),
+                parse_genome_sort(query),
+            )
+        )
 
     if len(path_parts) == 3 and path_parts[:2] == ["api", "genomes"]:
         genome_key = parse_int(path_parts[2])

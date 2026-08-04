@@ -98,6 +98,22 @@ def parse_genome_search(query):
     return normalize_search_text(query.get("search", [None])[0])
 
 
+def parse_genome_sort(query):
+    sort = query.get("sort", ["genome_id"])[0]
+    direction = query.get("direction", ["asc"])[0].lower()
+    sort_columns = {
+        "genome_id": "gi.genome_id COLLATE NOCASE",
+        "organism_name": "gi.organism_name COLLATE NOCASE",
+        "operon_count": "operon_count",
+        "gene_count": "gene_count",
+    }
+    if sort not in sort_columns:
+        sort = "genome_id"
+    if direction not in {"asc", "desc"}:
+        direction = "asc"
+    return sort, sort_columns[sort], direction.upper()
+
+
 def parse_occurrence_filters(query):
     return {
         "product": normalize_search_text(query.get("product", [None])[0]),
@@ -692,8 +708,9 @@ async def get_occurrence(db, occurrence_id):
     return occurrence
 
 
-async def browse_genomes(db, page, search):
+async def browse_genomes(db, page, search, sort):
     offset = (page - 1) * PAGE_SIZE
+    sort_key, sort_column, sort_direction = sort
     where_sql = ""
     params = []
     if search is not None:
@@ -728,7 +745,7 @@ async def browse_genomes(db, page, search):
           ) AS gene_count
         FROM genomes gi
         {where_sql}
-        ORDER BY gi.genome_key
+        ORDER BY {sort_column} {sort_direction}, gi.genome_key ASC
         LIMIT ? OFFSET ?
         """,
         (*params, PAGE_SIZE, offset),
@@ -738,6 +755,8 @@ async def browse_genomes(db, page, search):
         "pageSize": PAGE_SIZE,
         "total": total,
         "search": search or "",
+        "sort": sort_key,
+        "direction": sort_direction.lower(),
         "items": items,
     }
 

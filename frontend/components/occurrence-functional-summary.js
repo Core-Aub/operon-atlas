@@ -6,28 +6,16 @@ import {
 import {
   renderKeggPathwayLink,
 } from "./links.js";
-
-const FAMILY_TOOLTIP_RULES = [
-  "Summarizes functional evidence across annotated occurrences in this operon family.",
-  "Annotated occurrences are occurrences with at least one gene assigned a subsystem or pathway annotation.",
-  "Occurrence support shows how often a function appears among annotated occurrences.",
-  "Average annotated-gene share shows how much of the annotated portion of the operon is explained by that function.",
-  "Displayed functions are filtered to emphasize recurring functions that explain a meaningful share of annotated genes.",
-  "Annotation coverage is reported separately to show how much functional evidence is available for the family.",
-];
-
-const OCCURRENCE_TOOLTIP_RULES = [
-  "Shows exact functional annotations assigned to genes in this occurrence.",
-  "Annotated-gene share is the fraction of annotated genes associated with a subsystem or pathway.",
-  "All exact subsystem and pathway annotations detected in this occurrence are shown.",
-];
+import {
+  COLUMN_INFO,
+  renderColumnHeader,
+} from "./table-header.js";
 
 export function renderOperonFunctionalSummary(summary) {
   const normalized = normalizeOperonFunctionalSummary(summary);
   if (!normalized.coverage && !normalized.subsystems.length && !normalized.pathways.length) {
     return renderFunctionalSummaryBlock(
       "Functional Evidence Summary",
-      FAMILY_TOOLTIP_RULES,
       `<div class="functional-summary-empty">No functional evidence available for this operon family.</div>`,
     );
   }
@@ -36,7 +24,6 @@ export function renderOperonFunctionalSummary(summary) {
 
   return renderFunctionalSummaryBlock(
     "Functional Evidence Summary",
-    FAMILY_TOOLTIP_RULES,
     `
       <div class="functional-summary-stack">
         ${renderOperonEvidenceTable("Subsystems", "Subsystem", normalized.subsystems, subsystemName, subsystemContext)}
@@ -54,7 +41,6 @@ export function renderOccurrenceFunctionalSummary(genesOrSummary) {
   if (!summary.annotatedGeneCount) {
     return renderFunctionalSummaryBlock(
       "Functional Evidence Summary",
-      OCCURRENCE_TOOLTIP_RULES,
       `<div class="functional-summary-empty">No functional annotation available for this occurrence.</div>`,
     );
   }
@@ -63,7 +49,6 @@ export function renderOccurrenceFunctionalSummary(genesOrSummary) {
 
   return renderFunctionalSummaryBlock(
     "Functional Evidence Summary",
-    OCCURRENCE_TOOLTIP_RULES,
     `
       <div class="functional-summary-stack">
         ${renderOccurrenceEvidenceTable("Subsystems", "Subsystem", summary.subsystems, summary.annotatedGeneCount)}
@@ -207,27 +192,12 @@ function finalizeOccurrenceGroups(groups, annotatedGeneCount) {
     });
 }
 
-function renderFunctionalSummaryBlock(title, tooltipRules, body) {
+function renderFunctionalSummaryBlock(title, body) {
   return `
     <div class="functional-summary-header">
       <h2>${escapeHtml(title)}</h2>
-      ${renderInfoTooltip(tooltipRules)}
     </div>
     ${body}
-  `;
-}
-
-function renderInfoTooltip(rules) {
-  const ariaLabel = rules.join(" ");
-  return `
-    <span class="info-tooltip" tabindex="0" aria-label="${escapeHtml(ariaLabel)}">
-      <span class="info-icon" aria-hidden="true">i</span>
-      <span class="tooltip-content" role="tooltip">
-        <ul>
-          ${rules.map((rule) => `<li>${escapeHtml(rule)}</li>`).join("")}
-        </ul>
-      </span>
-    </span>
   `;
 }
 
@@ -238,10 +208,10 @@ function renderOperonEvidenceTable(title, primaryColumnLabel, rows, nameFormatte
   return renderEvidenceTable(
     title,
     [
-      primaryColumnLabel,
-      "Class",
-      "Occurrence support",
-      "Avg annotated-gene share",
+      evidenceColumn(primaryColumnLabel, COLUMN_INFO.SUBSYSTEM_FUNCTION_NAME),
+      evidenceColumn("Class", COLUMN_INFO.FUNCTIONAL_CLASSIFICATION_PATH),
+      evidenceColumn("Occurrence support", COLUMN_INFO.SUPPORTING_OCCURRENCE_RATIO),
+      evidenceColumn("Avg annotated-gene share", COLUMN_INFO.MEAN_ANNOTATED_GENE_SHARE),
     ],
     rows.map((row) => [
       stackCell(nameFormatter(row)),
@@ -262,10 +232,10 @@ function renderOperonPathwayEvidenceTable(rows) {
   return renderEvidenceTable(
     "Pathways",
     [
-      "Pathway",
-      "Class",
-      "Occurrence support",
-      "Avg annotated-gene share",
+      evidenceColumn("Pathway", COLUMN_INFO.KEGG_PATHWAY_NAME),
+      evidenceColumn("Class", COLUMN_INFO.FUNCTIONAL_CLASSIFICATION_PATH),
+      evidenceColumn("Occurrence support", COLUMN_INFO.SUPPORTING_OCCURRENCE_RATIO),
+      evidenceColumn("Avg annotated-gene share", COLUMN_INFO.MEAN_ANNOTATED_GENE_SHARE),
     ],
     rows.map((row) => [
       stackCell(formatPathwayDisplayName(row), "", {
@@ -289,10 +259,10 @@ function renderOccurrenceEvidenceTable(title, primaryColumnLabel, rows, annotate
   return renderEvidenceTable(
     title,
     [
-      primaryColumnLabel,
-      "Class",
-      "Gene support",
-      "Annotated-gene share",
+      evidenceColumn(primaryColumnLabel, COLUMN_INFO.SUBSYSTEM_FUNCTION_NAME),
+      evidenceColumn("Class", COLUMN_INFO.FUNCTIONAL_CLASSIFICATION_PATH),
+      evidenceColumn("Gene support", COLUMN_INFO.SUPPORTING_GENE_RATIO),
+      evidenceColumn("Annotated-gene share", COLUMN_INFO.FUNCTION_GENE_PROPORTION),
     ],
     rows.map((row) => [
       stackCell(row.name),
@@ -310,10 +280,10 @@ function renderOccurrencePathwayEvidenceTable(rows, annotatedGeneCount) {
   return renderEvidenceTable(
     "Pathways",
     [
-      "Pathway",
-      "Class",
-      "Gene support",
-      "Annotated-gene share",
+      evidenceColumn("Pathway", COLUMN_INFO.KEGG_PATHWAY_NAME),
+      evidenceColumn("Class", COLUMN_INFO.FUNCTIONAL_CLASSIFICATION_PATH),
+      evidenceColumn("Gene support", COLUMN_INFO.SUPPORTING_GENE_RATIO),
+      evidenceColumn("Annotated-gene share", COLUMN_INFO.FUNCTION_GENE_PROPORTION),
     ],
     rows.map((row) => [
       stackCell(row.name, "", {
@@ -336,7 +306,7 @@ function renderEvidenceTable(title, columns, rows, numericColumnStart = 2) {
           <table class="functional-summary-table">
             <thead>
               <tr>
-                ${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}
+                ${columns.map((column) => `<th>${renderColumnHeader(column.label, column.description)}</th>`).join("")}
               </tr>
             </thead>
             <tbody>
@@ -351,6 +321,10 @@ function renderEvidenceTable(title, columns, rows, numericColumnStart = 2) {
       </div>
     </section>
   `;
+}
+
+function evidenceColumn(label, description) {
+  return { label, description };
 }
 
 function stackCell(primary, secondary = "", options = {}) {

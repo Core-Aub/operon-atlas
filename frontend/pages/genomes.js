@@ -1,12 +1,16 @@
 import { fetchJson } from "../api.js";
 import {
+  DEFAULT_GENOME_SORT,
+  DEFAULT_GENOME_SORT_DIRECTION,
   FILTER_TEXT_MAX_LENGTH,
+  GENOME_SORT_FIELDS,
 } from "../config.js";
 import { app } from "../dom.js";
 import {
   getCurrentRouteKey,
   isCurrentRoute,
 } from "../routing/route-state.js";
+import { parseHash } from "../routing/hash.js";
 import {
   buildGenomeOperonApiQuery,
   buildGenomeViewerApiQuery,
@@ -27,7 +31,14 @@ import {
 } from "../components/layout.js";
 import { renderTableLink } from "../components/links.js";
 import { renderPager } from "../components/pager.js";
-import { renderGenomeSortableHeader } from "../components/sort.js";
+import {
+  renderGenomeListSortableHeader,
+  renderGenomeSortableHeader,
+} from "../components/sort.js";
+import {
+  COLUMN_INFO,
+  renderColumnHeader,
+} from "../components/table-header.js";
 import {
   renderGenomeViewer,
   setGenomeViewerData,
@@ -40,12 +51,9 @@ import {
 } from "../utils/format.js";
 
 export async function renderGenomes(page, params = new URLSearchParams(), routeKey = getCurrentRouteKey()) {
-  const search = sanitizeFilterText(params.get("search"));
-  const query = new URLSearchParams();
+  const state = getGenomeListState(params);
+  const query = getGenomeListParams(state);
   query.set("page", String(page));
-  if (search) {
-    query.set("search", search);
-  }
   const data = await fetchJson(`/api/genomes?${query.toString()}`);
   if (!isCurrentRoute(routeKey)) {
     return;
@@ -54,18 +62,18 @@ export async function renderGenomes(page, params = new URLSearchParams(), routeK
     <section class="section">
       ${pageHeader("Genomes")}
       <div class="table-actions">
-        ${renderGenomeSearch(search)}
-        ${renderPager("genomes", data, getGenomeSearchParams(search))}
+        ${renderGenomeSearch(state.search)}
+        ${renderPager("genomes", data, getGenomeListParams(state))}
       </div>
       <div class="panel">
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Genome ID</th>
-                <th>Species/Organism</th>
-                <th>Operons</th>
-                <th>Genes</th>
+                <th>${renderGenomeListSortableHeader("Genome ID", "genome_id", state, COLUMN_INFO.GENOME_ACCESSION_ID)}</th>
+                <th>${renderGenomeListSortableHeader("Species/Organism", "organism_name", state, COLUMN_INFO.GENOME_ORGANISM_NAME)}</th>
+                <th>${renderGenomeListSortableHeader("Operons", "operon_count", state, COLUMN_INFO.PREDICTED_OPERON_COUNT)}</th>
+                <th>${renderGenomeListSortableHeader("Genes", "gene_count", state, COLUMN_INFO.OPERON_ASSOCIATED_GENE_COUNT)}</th>
               </tr>
             </thead>
             <tbody>
@@ -132,10 +140,10 @@ export async function renderGenomeDetail(
             <table>
               <thead>
                 <tr>
-                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Stable Operon ID", "operon_id", filters)}</th>
-                  <th>Occurrence ID</th>
-                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Gene count", "gene_count", filters)}</th>
-                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Global occurrence count", "occurrence_count", filters)}</th>
+                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Stable Operon ID", "operon_id", filters, COLUMN_INFO.OPERON_FAMILY_ID)}</th>
+                  <th>${renderColumnHeader("Occurrence ID", COLUMN_INFO.GENOME_OCCURRENCE_ID)}</th>
+                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Gene count", "gene_count", filters, COLUMN_INFO.GENES_PER_OCCURRENCE)}</th>
+                  <th>${renderGenomeSortableHeader(`genomes/${genome.genome_key}`, "Global occurrence count", "occurrence_count", filters, COLUMN_INFO.GLOBAL_GENOME_OCCURRENCES)}</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,10 +176,22 @@ function renderGenomeSearch(search) {
   `;
 }
 
-function getGenomeSearchParams(search) {
+function getGenomeListState(params) {
+  const requestedSort = params.get("sort") || DEFAULT_GENOME_SORT;
+  const requestedDirection = (params.get("direction") || DEFAULT_GENOME_SORT_DIRECTION).toLowerCase();
+  return {
+    search: sanitizeFilterText(params.get("search")),
+    sort: GENOME_SORT_FIELDS.has(requestedSort) ? requestedSort : DEFAULT_GENOME_SORT,
+    direction: requestedDirection === "desc" ? "desc" : "asc",
+  };
+}
+
+function getGenomeListParams(state) {
   const params = new URLSearchParams();
-  if (search) {
-    params.set("search", search);
+  params.set("sort", state.sort);
+  params.set("direction", state.direction);
+  if (state.search) {
+    params.set("search", state.search);
   }
   return params;
 }
@@ -220,7 +240,9 @@ export function handleGenomeSearchClear(event) {
 }
 
 function setGenomeSearchRoute(search) {
-  const params = getGenomeSearchParams(search);
+  const state = getGenomeListState(parseHash().params);
+  state.search = search;
+  const params = getGenomeListParams(state);
   params.set("page", "1");
   const query = params.toString();
   window.location.hash = query ? `#genomes?${query}` : "#genomes?page=1";

@@ -270,6 +270,7 @@ tr:last-child td {
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
+  text-transform: lowercase;
 }
 
 .tooltip-content {
@@ -304,6 +305,47 @@ tr:last-child td {
 .info-tooltip:hover .tooltip-content,
 .info-tooltip:focus .tooltip-content {
   display: block;
+}
+
+.column-header {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.column-header-label {
+  min-width: 0;
+}
+
+.column-info-tooltip {
+  flex: 0 0 auto;
+}
+
+.column-info-tooltip .info-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+}
+
+.column-info-tooltip .tooltip-content {
+  top: calc(100% + 8px);
+  bottom: auto;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 72px));
+  white-space: normal;
+}
+
+th:first-child .column-info-tooltip .tooltip-content {
+  left: 0;
+  transform: none;
+}
+
+th:last-child .column-info-tooltip .tooltip-content {
+  right: 0;
+  left: auto;
+  transform: none;
 }
 
 .functional-summary-stack {

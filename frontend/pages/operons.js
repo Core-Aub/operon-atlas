@@ -24,9 +24,13 @@ import { renderTableLink } from "../components/links.js";
 import {
   getOperonAnnotationCoverageRows,
   renderOperonFunctionalSummary,
-} from "../components/occurrence-functional-summary.js?v=7";
+} from "../components/occurrence-functional-summary.js?v=8";
 import { renderPager } from "../components/pager.js";
 import { renderSortableHeader } from "../components/sort.js";
+import {
+  COLUMN_INFO,
+  renderColumnHeader,
+} from "../components/table-header.js";
 import { emptyTableRow, escapeHtml } from "../utils/html.js";
 import {
   formatNumber,
@@ -53,10 +57,10 @@ export async function renderOperons(page, params = new URLSearchParams(), routeK
           <table>
             <thead>
               <tr>
-                <th>${renderSortableHeader("Stable Operon ID", "operon_id", filters)}</th>
-                <th>PGFam content</th>
-                <th>${renderSortableHeader("Gene count", "gene_count", filters)}</th>
-                <th>${renderSortableHeader("Occurrence count", "occurrence_count", filters)}</th>
+                <th>${renderSortableHeader("Stable Operon ID", "operon_id", filters, COLUMN_INFO.OPERON_FAMILY_ID)}</th>
+                <th>${renderColumnHeader("PGFam content", COLUMN_INFO.PROTEIN_FAMILY_COMPOSITION)}</th>
+                <th>${renderSortableHeader("Gene count", "gene_count", filters, COLUMN_INFO.GENES_PER_OPERON)}</th>
+                <th>${renderSortableHeader("Occurrence count", "occurrence_count", filters, COLUMN_INFO.GENOME_OCCURRENCE_COUNT)}</th>
               </tr>
             </thead>
             <tbody>
@@ -114,10 +118,10 @@ export async function renderOperonDetail(
             <table>
               <thead>
                 <tr>
-                  <th>Occurrence ID</th>
-                  <th>Genome ID</th>
-                  <th>Organism</th>
-                  <th>Gene count</th>
+                  <th>${renderColumnHeader("Occurrence ID", COLUMN_INFO.GENOME_OCCURRENCE_ID)}</th>
+                  <th>${renderColumnHeader("Genome ID", COLUMN_INFO.GENOME_ACCESSION_ID)}</th>
+                  <th>${renderColumnHeader("Organism", COLUMN_INFO.GENOME_ORGANISM_NAME)}</th>
+                  <th>${renderColumnHeader("Gene count", COLUMN_INFO.GENES_PER_OCCURRENCE)}</th>
                 </tr>
               </thead>
               <tbody>

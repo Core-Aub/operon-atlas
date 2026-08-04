@@ -12,6 +12,12 @@ const paths = [
   "/api/operons/3454?page=1",
   "/api/occurrences/66374",
   "/api/genomes?page=1",
+  "/api/genomes?page=1&sort=genome_id&direction=desc",
+  "/api/genomes?page=1&sort=organism_name&direction=asc",
+  "/api/genomes?page=1&sort=operon_count&direction=desc",
+  "/api/genomes?page=1&sort=gene_count&direction=asc",
+  "/api/genomes?page=1&sort=invalid&direction=invalid",
+  "/api/genomes?page=1&search=Streptomyces&sort=organism_name&direction=desc",
   "/api/genomes/24",
   "/api/genomes/24/operons?page=1",
 ];

@@ -11,14 +11,17 @@ import {
   DEFAULT_OPERON_SORT_DIRECTION,
 } from "../config.js";
 import { escapeHtml } from "../utils/html.js";
+import { renderColumnHeader } from "./table-header.js";
 
-export function renderSortableHeader(label, sortKey, state) {
+export function renderSortableHeader(label, sortKey, state, description) {
   const isActive = state.sort === sortKey;
   const direction = isActive ? state.direction : "asc";
   const nextDirection = isActive && state.direction === "asc" ? "desc" : "asc";
   const params = getOperonPagerParams({ ...state, sort: sortKey, direction: nextDirection });
   params.set("page", "1");
-  return renderSortLink(`operons?${params.toString()}`, label, direction, isActive);
+  return renderColumnHeader(label, description, {
+    labelHtml: renderSortLink(`operons?${params.toString()}`, label, direction, isActive),
+  });
 }
 
 export function renderSortHeaderForRoute(route, label, sortKey, state) {
@@ -30,7 +33,23 @@ export function renderSortHeaderForRoute(route, label, sortKey, state) {
   return renderSortLink(`${route}?${params.toString()}`, label, direction, isActive);
 }
 
-export function renderGenomeSortableHeader(route, label, sortKey, state) {
+export function renderGenomeListSortableHeader(label, sortKey, state, description) {
+  const isActive = state.sort === sortKey;
+  const direction = isActive ? state.direction : "asc";
+  const nextDirection = isActive && state.direction === "asc" ? "desc" : "asc";
+  const params = new URLSearchParams();
+  params.set("page", "1");
+  params.set("sort", sortKey);
+  params.set("direction", nextDirection);
+  if (state.search) {
+    params.set("search", state.search);
+  }
+  return renderColumnHeader(label, description, {
+    labelHtml: renderSortLink(`genomes?${params.toString()}`, label, direction, isActive),
+  });
+}
+
+export function renderGenomeSortableHeader(route, label, sortKey, state, description) {
   const isActive = state.sort === sortKey;
   const direction = isActive ? state.direction : "asc";
   const nextDirection = isActive && state.direction === "asc" ? "desc" : "asc";
@@ -40,7 +59,9 @@ export function renderGenomeSortableHeader(route, label, sortKey, state) {
     direction: nextDirection,
   });
   params.set("page", "1");
-  return renderSortLink(`${route}?${params.toString()}`, label, direction, isActive);
+  return renderColumnHeader(label, description, {
+    labelHtml: renderSortLink(`${route}?${params.toString()}`, label, direction, isActive),
+  });
 }
 
 export function renderSortLink(href, label, direction, isActive) {
