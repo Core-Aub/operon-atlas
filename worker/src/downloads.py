@@ -16,7 +16,7 @@ class DownloadsError(Exception):
         self.status = status
 
 
-async def get_download_manifest(bucket):
+async def get_download_manifest(bucket, download_base_url=""):
     manifest_object = await bucket.get(DOWNLOAD_MANIFEST_KEY)
     if manifest_object is None:
         raise DownloadsError("Download manifest not found", 404)
@@ -31,7 +31,7 @@ async def get_download_manifest(bucket):
         if not filename:
             continue
         item = dict(dataset)
-        item["download_url"] = download_url(release, filename)
+        item["download_url"] = download_url(release, filename, download_base_url)
         item["object_key"] = f"{prefix}{filename}"
         datasets.append(item)
 
@@ -39,7 +39,11 @@ async def get_download_manifest(bucket):
     documentation_filename = safe_filename(documentation.get("filename"))
     normalized_documentation = dict(documentation)
     if documentation_filename:
-        normalized_documentation["download_url"] = download_url(release, documentation_filename)
+        normalized_documentation["download_url"] = download_url(
+            release,
+            documentation_filename,
+            download_base_url,
+        )
         normalized_documentation["object_key"] = f"{prefix}{documentation_filename}"
 
     return {
@@ -93,11 +97,20 @@ async def maybe_await(value):
     return value
 
 
-def download_url(release, filename):
-    return (
-        "/api/downloads/releases/"
-        f"{quote(str(release), safe='')}/files/{quote(filename, safe='')}"
-    )
+def download_url(release, filename, download_base_url=""):
+    base_url = normalize_base_url(download_base_url)
+    encoded_release = quote(str(release), safe="")
+    encoded_filename = quote(filename, safe="")
+    if base_url:
+        return f"{base_url}/releases/{encoded_release}/{encoded_filename}"
+    return f"/api/downloads/releases/{encoded_release}/files/{encoded_filename}"
+
+
+def normalize_base_url(value):
+    text = str(value or "").strip().rstrip("/")
+    if not text.startswith("https://"):
+        return ""
+    return text
 
 
 def safe_release(value):

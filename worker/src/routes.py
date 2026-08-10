@@ -56,7 +56,7 @@ async def route_request(request, env):
             return json_response({"error": "Downloads bucket binding is not configured"}, 500)
 
         try:
-            return await route_downloads(path_parts, downloads)
+            return await route_downloads(path_parts, downloads, env)
         except DownloadsError as exc:
             return json_response({"error": exc.message}, exc.status)
         except Exception as exc:
@@ -164,9 +164,11 @@ async def route_api(path_parts, query, page, db):
     return json_response({"error": "Not found"}, 404)
 
 
-async def route_downloads(path_parts, downloads):
+async def route_downloads(path_parts, downloads, env):
     if path_parts == ["api", "downloads"]:
-        return json_response(await get_download_manifest(downloads))
+        return json_response(
+            await get_download_manifest(downloads, get_download_base_url(env))
+        )
 
     if (
         len(path_parts) == 6
@@ -176,6 +178,13 @@ async def route_downloads(path_parts, downloads):
         return await get_download_file_response(downloads, path_parts[3], path_parts[5])
 
     return json_response({"error": "Not found"}, 404)
+
+
+def get_download_base_url(env):
+    try:
+        return str(env.DOWNLOAD_BASE_URL or "")
+    except Exception:
+        return ""
 
 
 def parse_int(value):
