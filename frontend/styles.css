@@ -232,6 +232,34 @@ tr:last-child td {
   width: 230px;
 }
 
+.summary-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.concept-help-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.concept-help-link:hover,
+.concept-help-link:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .functional-summary-header {
   display: flex;
   flex-wrap: wrap;
@@ -302,8 +330,23 @@ tr:last-child td {
   margin-top: 6px;
 }
 
+.tooltip-help-link {
+  display: block;
+  width: max-content;
+  margin-top: 7px;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tooltip-help-link:hover,
+.tooltip-help-link:focus-visible {
+  text-decoration: underline;
+}
+
 .info-tooltip:hover .tooltip-content,
-.info-tooltip:focus .tooltip-content {
+.info-tooltip:focus .tooltip-content,
+.info-tooltip:focus-within .tooltip-content {
   display: block;
 }
 
@@ -1159,6 +1202,280 @@ button:disabled,
   color: var(--danger);
 }
 
+.help-page {
+  width: min(920px, 100%);
+  padding-bottom: 32px;
+}
+
+.help-page a:focus-visible,
+.help-page summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.help-intro,
+.help-section,
+.help-contents {
+  scroll-margin-top: 20px;
+}
+
+.help-intro {
+  margin-bottom: 28px;
+}
+
+.help-notice {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid #d8cba1;
+  border-left: 4px solid #9a7a1f;
+  border-radius: 2px;
+  background: #fbf8ed;
+}
+
+.help-notice strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #594912;
+}
+
+.help-notice p {
+  margin-bottom: 0;
+}
+
+.help-contents {
+  margin-bottom: 42px;
+  padding: 18px;
+  background: var(--accent-light);
+}
+
+.help-contents h2 {
+  margin-bottom: 14px;
+  font-size: 19px;
+}
+
+.help-contents-list {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.help-contents-list li + li {
+  margin-top: 8px;
+}
+
+.help-contents-list a {
+  color: var(--accent-dark);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.help-contents-list a:hover {
+  text-decoration: underline;
+}
+
+.help-section {
+  margin-bottom: 48px;
+}
+
+.help-section > p:last-child,
+.help-step p,
+.help-view-row p,
+.help-download-row p,
+.help-reference p {
+  margin-bottom: 0;
+}
+
+.help-reference {
+  margin-top: 16px;
+  padding: 18px;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-light);
+}
+
+.help-reference a {
+  overflow-wrap: anywhere;
+}
+
+.help-steps {
+  display: grid;
+  gap: 14px;
+}
+
+.help-step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.help-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.help-step h3 {
+  margin-top: 3px;
+}
+
+.help-concept-grid,
+.help-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 20px 0;
+}
+
+.help-concept-card {
+  padding: 18px;
+  background: var(--surface);
+}
+
+.help-concept-card h3 {
+  font-size: 20px;
+}
+
+.help-concept-card p:last-child {
+  margin-bottom: 0;
+}
+
+.help-eyebrow {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.help-definitions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  margin: 20px 0 0;
+}
+
+.help-definitions > div {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.help-definitions dt {
+  color: var(--accent);
+  font-weight: 750;
+}
+
+.help-definitions dd {
+  margin: 4px 0 0;
+  color: var(--text);
+}
+
+.help-view-list {
+  overflow: visible;
+}
+
+.help-view-row {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.help-view-row:last-child {
+  border-bottom: 0;
+}
+
+.help-view-row h3 {
+  margin-bottom: 0;
+}
+
+.help-view-row h3 a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.help-view-row h3 a:hover {
+  text-decoration: underline;
+}
+
+.help-table-wrap {
+  overflow-x: auto;
+}
+
+.help-table {
+  min-width: 760px;
+}
+
+.help-table th:first-child,
+.help-table td:first-child {
+  width: 145px;
+}
+
+.help-table th:last-child,
+.help-table td:last-child {
+  width: 230px;
+}
+
+.help-table code,
+.help-download-row code,
+.help-concept-card code,
+.help-section code {
+  color: var(--accent-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.help-note {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.help-download-list {
+  margin-bottom: 16px;
+}
+
+.help-download-row {
+  display: grid;
+  grid-template-columns: minmax(0, 225px) minmax(0, 1fr);
+  gap: 18px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.help-download-row > code {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.help-download-row:last-child {
+  border-bottom: 0;
+}
+
+.help-download-row strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--accent);
+}
+
+.help-list {
+  margin: 0 0 18px;
+  padding-left: 21px;
+}
+
+.help-list li + li {
+  margin-top: 8px;
+}
+
 @media (max-width: 820px) {
   .sidebar {
     position: static;
@@ -1167,7 +1484,7 @@ button:disabled,
   }
 
   .nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     margin-top: 14px;
   }
 
@@ -1185,6 +1502,28 @@ button:disabled,
 @media (max-width: 560px) {
   .main {
     padding: 16px;
+  }
+
+  .nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .help-concept-grid,
+  .help-two-column,
+  .help-definitions {
+    grid-template-columns: 1fr;
+  }
+
+  .help-view-row,
+  .help-download-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .help-concept-card,
+  .help-contents,
+  .help-notice {
+    padding: 15px;
   }
 
   th,

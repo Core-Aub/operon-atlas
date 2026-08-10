@@ -36,6 +36,27 @@ export const COLUMN_INFO = Object.freeze({
   DOCUMENTATION_DOWNLOAD_LINK: "Documentation download link",
 });
 
+const HELP_BY_DESCRIPTION = Object.freeze({
+  [COLUMN_INFO.OPERON_FAMILY_ID]: "family-vs-occurrence",
+  [COLUMN_INFO.PROTEIN_FAMILY_COMPOSITION]: "family-vs-occurrence",
+  [COLUMN_INFO.GENOME_OCCURRENCE_COUNT]: "family-vs-occurrence",
+  [COLUMN_INFO.GENOME_OCCURRENCE_ID]: "family-vs-occurrence",
+  [COLUMN_INFO.GLOBAL_GENOME_OCCURRENCES]: "family-vs-occurrence",
+  [COLUMN_INFO.GENE_FUNCTIONAL_EVIDENCE]: "annotations",
+  [COLUMN_INFO.PROTEIN_FAMILY_ID]: "annotations",
+  [COLUMN_INFO.SUBSYSTEM_FUNCTION_NAME]: "annotations",
+  [COLUMN_INFO.KEGG_PATHWAY_NAME]: "annotations",
+  [COLUMN_INFO.FUNCTIONAL_CLASSIFICATION_PATH]: "annotations",
+  [COLUMN_INFO.SUPPORTING_OCCURRENCE_RATIO]: "annotations",
+  [COLUMN_INFO.MEAN_ANNOTATED_GENE_SHARE]: "annotations",
+  [COLUMN_INFO.SUPPORTING_GENE_RATIO]: "annotations",
+  [COLUMN_INFO.FUNCTION_GENE_PROPORTION]: "annotations",
+  [COLUMN_INFO.EXPORT_DATASET_NAME]: "downloads",
+  [COLUMN_INFO.DATASET_CONTENTS_SUMMARY]: "downloads",
+  [COLUMN_INFO.ARCHIVE_FILE_FORMAT]: "downloads",
+  [COLUMN_INFO.FILE_INTEGRITY_CHECKSUM]: "downloads",
+});
+
 export function renderColumnHeader(label, description, options = {}) {
   const labelHtml = options.labelHtml || escapeHtml(label);
   return `
@@ -47,6 +68,7 @@ export function renderColumnHeader(label, description, options = {}) {
 }
 
 function renderColumnInfo(label, description) {
+  const helpAnchor = HELP_BY_DESCRIPTION[description];
   return `
     <span
       class="info-tooltip column-info-tooltip"
@@ -54,7 +76,10 @@ function renderColumnInfo(label, description) {
       aria-label="${escapeHtml(`${label}: ${description}`)}"
     >
       <span class="info-icon" aria-hidden="true">i</span>
-      <span class="tooltip-content" role="tooltip">${escapeHtml(description)}</span>
+      <span class="tooltip-content">
+        <span>${escapeHtml(description)}</span>
+        ${helpAnchor ? `<a class="tooltip-help-link" href="#help/${helpAnchor}">Learn more</a>` : ""}
+      </span>
     </span>
   `;
 }

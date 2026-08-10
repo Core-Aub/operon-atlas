@@ -96,9 +96,9 @@ export async function renderOperonDetail(
 
       <div class="section">
         ${renderInfoTable([
-          ["Occurrence count", formatNumber(data.occurrence_count)],
+          ["Occurrence count", formatNumber(data.occurrence_count), "family-vs-occurrence"],
           ["Gene count", formatNumber(data.gene_count)],
-          ["PGFam content", escapeHtml(formatPgfamContent(data.pgfams))],
+          ["PGFam content", escapeHtml(formatPgfamContent(data.pgfams)), "family-vs-occurrence"],
           ...getOperonAnnotationCoverageRows(data.functional_summary),
         ])}
       </div>

@@ -49,7 +49,7 @@ export async function renderOccurrenceDetail(occurrenceId, routeKey = getCurrent
 
       <div class="section">
         ${renderInfoTable([
-          ["Stable Operon ID", renderTableLink(`#operons/${data.operon_id}?page=1`, data.stable_display_id || formatStableOperonId(data.operon_id))],
+          ["Stable Operon ID", renderTableLink(`#operons/${data.operon_id}?page=1`, data.stable_display_id || formatStableOperonId(data.operon_id)), "family-vs-occurrence"],
           ["Genome ID", renderTableLink(`#genomes/${data.genome_key}?page=1`, data.genome_id)],
           ["Organism", escapeHtml(data.organism_name || "")],
           ["Gene count", formatNumber(data.gene_count)],

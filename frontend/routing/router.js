@@ -1,9 +1,10 @@
 import { app, navLinks } from "../dom.js";
-import { renderDownloads } from "../pages/downloads.js";
-import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js";
+import { renderDownloads } from "../pages/downloads.js?v=1";
+import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js?v=1";
+import { renderHelp } from "../pages/help.js?v=4";
 import { renderHome } from "../pages/home.js?v=1";
-import { renderOccurrenceDetail } from "../pages/occurrence.js?v=6";
-import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=6";
+import { renderOccurrenceDetail } from "../pages/occurrence.js?v=7";
+import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=7";
 import { getPage, parseHash } from "./hash.js";
 import {
   isCurrentRoute,
@@ -22,6 +23,8 @@ export async function renderRoute() {
   try {
     if (route === "home") {
       await renderHome(routeKey);
+    } else if (route === "help") {
+      renderHelp(parts[1]);
     } else if (route === "downloads" && parts.length === 1) {
       await renderDownloads(routeKey);
     } else if (route === "operons" && parts.length === 1) {

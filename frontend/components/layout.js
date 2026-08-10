@@ -33,7 +33,7 @@ export function renderInfoTable(rows) {
       <div class="table-wrap">
         <table>
           <tbody>
-            ${rows.map(([label, value]) => summaryRow(label, value)).join("")}
+            ${rows.map(([label, value, helpAnchor]) => summaryRow(label, value, helpAnchor)).join("")}
           </tbody>
         </table>
       </div>
@@ -41,10 +41,15 @@ export function renderInfoTable(rows) {
   `;
 }
 
-function summaryRow(label, value) {
+function summaryRow(label, value, helpAnchor = "") {
   return `
     <tr>
-      <th>${escapeHtml(label)}</th>
+      <th>
+        <span class="summary-label">
+          <span>${escapeHtml(label)}</span>
+          ${helpAnchor ? `<a class="concept-help-link" href="#help/${helpAnchor}" aria-label="Help about ${escapeHtml(label)}" title="Learn more">?</a>` : ""}
+        </span>
+      </th>
       <td>${value}</td>
     </tr>
   `;
