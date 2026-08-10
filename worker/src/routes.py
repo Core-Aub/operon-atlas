@@ -22,7 +22,6 @@ from db import (
 )
 from downloads import (
     DownloadsError,
-    get_download_file_response,
     get_download_manifest,
 )
 
@@ -48,6 +47,10 @@ async def route_request(request, env):
 
     if path_parts == ["api", "health"]:
         return json_response({"ok": True})
+
+    rate_limit_response = await check_rate_limits(request, env, path_parts)
+    if rate_limit_response is not None:
+        return rate_limit_response
 
     if path_parts[:2] == ["api", "downloads"]:
         try:
@@ -77,10 +80,16 @@ async def route_request(request, env):
 
 async def route_api(path_parts, query, page, db):
     if path_parts == ["api", "stats"]:
-        return json_response(await stats(db))
+        return json_response(
+            await stats(db),
+            headers={"Cache-Control": "public, max-age=300"},
+        )
 
     if path_parts == ["api", "organisms"]:
-        return json_response(await organisms(db))
+        return json_response(
+            await organisms(db),
+            headers={"Cache-Control": "public, max-age=900"},
+        )
 
     if path_parts == ["api", "operons"]:
         return json_response(
@@ -167,17 +176,89 @@ async def route_api(path_parts, query, page, db):
 async def route_downloads(path_parts, downloads, env):
     if path_parts == ["api", "downloads"]:
         return json_response(
-            await get_download_manifest(downloads, get_download_base_url(env))
+            await get_download_manifest(downloads, get_download_base_url(env)),
+            headers={"Cache-Control": "public, max-age=300"},
         )
 
-    if (
-        len(path_parts) == 6
-        and path_parts[:3] == ["api", "downloads", "releases"]
-        and path_parts[4] == "files"
-    ):
-        return await get_download_file_response(downloads, path_parts[3], path_parts[5])
-
     return json_response({"error": "Not found"}, 404)
+
+
+async def check_rate_limits(request, env, path_parts):
+    if not is_api_path(path_parts):
+        return None
+
+    client_key = rate_limit_client_key(request)
+    if await is_rate_limited(env, "API_RATE_LIMITER", f"api:{client_key}"):
+        return rate_limit_response("Too many API requests")
+
+    if is_heavy_api_path(path_parts):
+        route_key = heavy_route_key(path_parts)
+        if await is_rate_limited(
+            env,
+            "HEAVY_API_RATE_LIMITER",
+            f"heavy:{route_key}:{client_key}",
+        ):
+            return rate_limit_response("Too many requests for this endpoint")
+
+    return None
+
+
+def is_api_path(path_parts):
+    return len(path_parts) >= 1 and path_parts[0] == "api"
+
+
+def is_heavy_api_path(path_parts):
+    if len(path_parts) >= 2 and path_parts[1] in ("operons", "occurrences"):
+        return True
+    if len(path_parts) >= 4 and path_parts[1] == "genomes":
+        return path_parts[3] in ("viewer", "operons")
+    return False
+
+
+def heavy_route_key(path_parts):
+    if len(path_parts) >= 2 and path_parts[1] in ("operons", "occurrences"):
+        return path_parts[1]
+    if len(path_parts) >= 4 and path_parts[1] == "genomes":
+        return f"genomes:{path_parts[3]}"
+    return "api"
+
+
+def rate_limit_client_key(request):
+    headers = getattr(request, "headers", None)
+    if headers is not None:
+        for header in ("cf-connecting-ip", "x-forwarded-for"):
+            value = headers.get(header)
+            if value:
+                return value.split(",", 1)[0].strip()
+    return "anonymous"
+
+
+async def is_rate_limited(env, binding_name, key):
+    try:
+        limiter = getattr(env, binding_name)
+    except Exception:
+        return False
+
+    try:
+        result = await limiter.limit({"key": key})
+    except Exception as exc:
+        print(f"Rate limiter {binding_name} failed: {exc}")
+        return False
+
+    try:
+        if isinstance(result, dict):
+            return not bool(result.get("success"))
+        return not bool(result.success)
+    except Exception:
+        return False
+
+
+def rate_limit_response(message):
+    return json_response(
+        {"error": message},
+        429,
+        headers={"Retry-After": "60"},
+    )
 
 
 def get_download_base_url(env):
@@ -194,12 +275,16 @@ def parse_int(value):
         return None
 
 
-def json_response(payload, status=200):
+def json_response(payload, status=200, headers=None):
+    response_headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        **CORS_HEADERS,
+    }
+    if headers:
+        response_headers.update(headers)
+
     return Response(
         json.dumps(payload, separators=(",", ":")),
         status=status,
-        headers={
-            "Content-Type": "application/json; charset=utf-8",
-            **CORS_HEADERS,
-        },
+        headers=response_headers,
     )

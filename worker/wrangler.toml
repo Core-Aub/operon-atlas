@@ -5,6 +5,9 @@ preview_urls = false
 compatibility_date = "2026-07-25"
 compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 
+[limits]
+cpu_ms = 1000
+
 [[d1_databases]]
 binding = "DB"
 database_name = "operon_atlas_sample"
@@ -13,3 +16,19 @@ database_id = "2c8de36e-0c8b-4ab5-8d1c-c08e0aef9877"
 [[r2_buckets]]
 binding = "DOWNLOADS"
 bucket_name = "operonatlas-downloads"
+
+[[ratelimits]]
+name = "API_RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 120
+  period = 60
+
+[[ratelimits]]
+name = "HEAVY_API_RATE_LIMITER"
+namespace_id = "1002"
+
+  [ratelimits.simple]
+  limit = 30
+  period = 60
