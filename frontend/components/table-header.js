@@ -75,7 +75,7 @@ function renderColumnInfo(label, description) {
       tabindex="0"
       aria-label="${escapeHtml(`${label}: ${description}`)}"
     >
-      <span class="info-icon" aria-hidden="true">i</span>
+      <span class="info-icon" aria-hidden="true">?</span>
       <span class="tooltip-content">
         <span>${escapeHtml(description)}</span>
         ${helpAnchor ? `<a class="tooltip-help-link" href="#help/${helpAnchor}">Learn more</a>` : ""}
