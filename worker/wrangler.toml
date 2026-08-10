@@ -1,6 +1,6 @@
 name = "operonatlas-api"
 main = "src/main.py"
-compatibility_date = "2026-08-10"
+compatibility_date = "2026-07-25"
 compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 
 [[d1_databases]]

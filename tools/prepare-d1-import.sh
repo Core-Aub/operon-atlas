@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-SOURCE_DB="${1:-database/operons_sample.db}"
-OUTPUT_SQL="${2:-.wrangler/imports/operons-sample.sql}"
+SOURCE_DB="${1:-database/operon_atlas_sample.db}"
+OUTPUT_SQL="${2:-.wrangler/imports/operon_atlas_sample.sql}"
 OUTPUT_DIR="$(dirname "$OUTPUT_SQL")"
 
 if [ ! -f "$SOURCE_DB" ]; then

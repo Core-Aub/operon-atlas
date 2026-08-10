@@ -1,9 +1,10 @@
 {
   "scripts": {
     "db:prepare-sample": "sh tools/prepare-d1-import.sh",
-    "db:seed:local": "cd worker && npx wrangler d1 execute operons-sample --local --persist-to ../.wrangler/state --file ../.wrangler/imports/operons-sample.sql",
-    "db:seed:remote": "cd worker && npx wrangler d1 execute operons-sample --remote --file ../.wrangler/imports/operons-sample.sql",
+    "db:seed:local": "cd worker && npx wrangler d1 execute operon_atlas_sample --local --persist-to ../.wrangler/state --file ../.wrangler/imports/operon_atlas_sample.sql",
+    "db:seed:remote": "cd worker && npx wrangler d1 execute operon_atlas_sample --remote --file ../.wrangler/imports/operon_atlas_sample.sql",
     "r2:seed:local": "sh tools/seed_local_r2_downloads.sh",
+    "r2:seed:remote": "sh tools/seed_remote_r2_downloads.sh",
     "worker:dev": "cd worker && npx wrangler dev --local --persist-to ../.wrangler/state --port 8787",
     "worker:dev:remote": "cd worker && npx wrangler dev --remote --port 8787",
     "worker:deploy": "cd worker && npx wrangler deploy",
