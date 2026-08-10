@@ -5,8 +5,8 @@ preview_urls = false
 compatibility_date = "2026-07-25"
 compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 
-[limits]
-cpu_ms = 1000
+# [limits]
+# cpu_ms = 1000
 
 [[d1_databases]]
 binding = "DB"
