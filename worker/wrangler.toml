@@ -5,6 +5,9 @@ preview_urls = false
 compatibility_date = "2026-07-25"
 compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 
+[vars]
+DOWNLOAD_BASE_URL = "https://downloads.operonatlas.org"
+
 # [limits]
 # cpu_ms = 1000
 
