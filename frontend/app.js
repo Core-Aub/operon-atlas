@@ -8,7 +8,7 @@ import {
   handleGenomeSearchSubmit,
 } from "./pages/genomes.js";
 import { handleReturnClick } from "./routing/navigation.js";
-import { renderRoute } from "./routing/router.js?v=11";
+import { renderRoute } from "./routing/router.js?v=12";
 import { handleGeneViewerClick } from "./viewers/gene-viewer.js";
 import { handleGenomeViewerClick } from "./viewers/genome-viewer.js";
 

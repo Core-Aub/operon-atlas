@@ -13,8 +13,15 @@ import {
 import { escapeHtml } from "../utils/html.js";
 
 export async function renderRoute() {
-  const routeKey = window.location.hash || "#home";
+  const routeKey = `${window.location.pathname}${window.location.search}${window.location.hash || "#home"}`;
   setCurrentRouteKey(routeKey);
+
+  if (!isApplicationPath()) {
+    setActiveNav("");
+    renderNotFound();
+    return;
+  }
+
   const { parts, params } = parseHash();
   const route = parts[0] || "home";
   setActiveNav(route);
@@ -68,5 +75,17 @@ function renderError(error) {
 }
 
 function renderNotFound() {
-  app.innerHTML = `<div class="empty">The requested view was not found.</div>`;
+  app.innerHTML = `
+    <section class="not-found" aria-labelledby="not-found-title">
+      <div class="not-found-code" aria-hidden="true">404</div>
+      <h1 id="not-found-title">Page not found</h1>
+      <p>The page you requested does not exist or may have moved.</p>
+      <a class="button primary not-found-home" href="/#home">Back to home</a>
+    </section>
+  `;
+}
+
+function isApplicationPath() {
+  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  return pathname === "/" || pathname === "/index.html";
 }
