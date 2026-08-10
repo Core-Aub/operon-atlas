@@ -1,17 +1,18 @@
 {
   "scripts": {
     "db:prepare-sample": "sh tools/prepare-d1-import.sh",
+    "db:prepare-full": "sh tools/prepare-d1-full-import.sh",
     "db:seed:local": "cd worker && npx wrangler d1 execute operon_atlas_sample --local --persist-to ../.wrangler/state --file ../.wrangler/imports/operon_atlas_sample.sql",
     "db:seed:remote": "cd worker && npx wrangler d1 execute operon_atlas_sample --remote --file ../.wrangler/imports/operon_atlas_sample.sql",
     "r2:seed:local": "sh tools/seed_local_r2_downloads.sh",
     "r2:seed:remote": "sh tools/seed_remote_r2_downloads.sh",
+    "r2:seed-full:remote:dry-run": "sh tools/seed_remote_r2_downloads_s3.sh --dry-run downloads/operon_atlas_full",
+    "r2:seed-full:remote": "sh tools/seed_remote_r2_downloads_s3.sh downloads/operon_atlas_full",
     "worker:dev": "cd worker && npx wrangler dev --local --persist-to ../.wrangler/state --port 8787",
-    "worker:dev:remote": "cd worker && npx wrangler dev --remote --port 8787",
     "worker:deploy": "cd worker && npx wrangler deploy",
     "worker:deploy:dry-run": "cd worker && npx wrangler deploy --dry-run",
     "pages:dev": "npx wrangler pages dev frontend --service API_WORKER=operonatlas-api --port 8080",
     "smoke:api": "node tools/smoke-api.mjs http://127.0.0.1:8787",
-    "smoke:pages": "node tools/smoke-api.mjs http://127.0.0.1:8080",
-    "compare:api": "node tools/compare-api.mjs http://127.0.0.1:8787 http://127.0.0.1:8788"
+    "smoke:pages": "node tools/smoke-api.mjs http://127.0.0.1:8080"
   }
 }

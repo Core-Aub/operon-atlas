@@ -100,3 +100,7 @@ sqlite3 "$SOURCE_DB" \
   >> "$OUTPUT_SQL"
 
 echo "Wrote D1 import SQL to $OUTPUT_SQL"
+
+SQL_BYTES="$(wc -c < "$OUTPUT_SQL" | tr -d ' ')"
+SQL_GIB="$(awk -v bytes="$SQL_BYTES" 'BEGIN { printf "%.2f GiB", bytes / 1073741824 }')"
+echo "Import SQL size: $SQL_GIB ($SQL_BYTES bytes)"
