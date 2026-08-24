@@ -8,8 +8,8 @@ compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 [vars]
 DOWNLOAD_BASE_URL = "https://downloads.operonatlas.org"
 
-[limits]
-cpu_ms = 1000
+# [limits]
+# cpu_ms = 1000
 
 [[d1_databases]]
 binding = "DB"
