@@ -217,7 +217,7 @@ The tracked `tools/normalize_release_data.py` utility is the one-time, fail-clos
 
 All retained Python commands must run in the `bio` environment and use explicit input/output paths.
 
-Taxonomy counts use taxon IDs, never parsed organism names. Family-genome links are deduplicated before counting, so each genome, species, genus, and phylum contributes at most once per family. Nullable rank coverage is recorded explicitly. Complete phylum and paginated genus distributions are calculated from `genome_taxonomy` at query time to avoid a large materialized family-by-taxon table.
+Taxonomy counts use positive integer taxon IDs, never parsed organism names. Family-genome links are deduplicated before counting, so each genome, species, genus, and phylum contributes at most once per family. Missing or empty rank fields are treated as unclassified coverage and are excluded from rank distributions. Complete phylum and paginated genus distributions are calculated from `genome_taxonomy` at query time to avoid a large materialized family-by-taxon table.
 
 ### Rebuilding SQLite databases
 

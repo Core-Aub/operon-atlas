@@ -1978,11 +1978,16 @@ async def get_operon_taxonomy(db, operon_id, genera_page):
           gt.phylum_taxon_id AS taxon_id,
           MIN(gt.phylum_name) AS name,
           COUNT(*) AS genome_count,
-          COUNT(DISTINCT gt.species_taxon_id) AS species_count
+          COUNT(DISTINCT CASE
+            WHEN typeof(gt.species_taxon_id) = 'integer'
+              AND gt.species_taxon_id > 0
+            THEN gt.species_taxon_id
+          END) AS species_count
         FROM family_genomes fg
         JOIN genome_taxonomy gt
           ON gt.genome_key = fg.genome_key
-        WHERE gt.phylum_taxon_id IS NOT NULL
+        WHERE typeof(gt.phylum_taxon_id) = 'integer'
+          AND gt.phylum_taxon_id > 0
         GROUP BY gt.phylum_taxon_id
         ORDER BY
           genome_count DESC,
@@ -2005,11 +2010,16 @@ async def get_operon_taxonomy(db, operon_id, genera_page):
           gt.genus_taxon_id AS taxon_id,
           MIN(gt.genus_name) AS name,
           COUNT(*) AS genome_count,
-          COUNT(DISTINCT gt.species_taxon_id) AS species_count
+          COUNT(DISTINCT CASE
+            WHEN typeof(gt.species_taxon_id) = 'integer'
+              AND gt.species_taxon_id > 0
+            THEN gt.species_taxon_id
+          END) AS species_count
         FROM family_genomes fg
         JOIN genome_taxonomy gt
           ON gt.genome_key = fg.genome_key
-        WHERE gt.genus_taxon_id IS NOT NULL
+        WHERE typeof(gt.genus_taxon_id) = 'integer'
+          AND gt.genus_taxon_id > 0
         GROUP BY gt.genus_taxon_id
         ORDER BY
           genome_count DESC,
