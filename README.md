@@ -10,8 +10,10 @@ It brings operon families, their genome-specific occurrences, gene organization,
 
 ## What you can explore
 
-- Browse predicted operon families and filter them by size, organism, genome, or gene product.
+- Search by operon/occurrence/gene ID, product, PGFam, EC number, pathway, subsystem, genome, organism, or taxon, then follow the match to relevant families and occurrences.
+- Browse predicted operon families and filter them by size, organism, genome, functional annotation, or taxonomy.
 - Inspect every genome-specific occurrence of an operon family.
+- Compare each family’s breadth across distinct genomes, species, genera, and phyla.
 - View gene order, strand, genomic coordinates, PGFam assignments, and product annotations.
 - Explore pathway and BV-BRC subsystem evidence associated with operon genes.
 - Browse genomes and visualize predicted operons in genomic context.
@@ -24,7 +26,7 @@ OperonAtlas distinguishes between two related concepts:
 - **Operon family** — a stable group defined by its PGFam multiset signature. Gene order is ignored, while duplicate PGFam copies are preserved. Family identifiers use the form `OAF000504`.
 - **Operon occurrence** — one predicted instance of an operon family in a particular genome. Occurrence identifiers use the form `OAO123456`.
 
-Only predicted occurrences with at least two genes and complete PGFam annotation are included in the current dataset.
+Only same-contig predicted occurrences with at least two genes and complete PGFam annotation are included in the current dataset.
 
 ## Data
 
@@ -44,6 +46,21 @@ OperonAtlas is publicly available at [operonatlas.org](https://operonatlas.org/)
 ## Developer documentation
 
 For local setup, architecture, API behavior, database preparation, testing, deployment, and contribution guidance, see [docs.md](docs.md).
+
+The routine local workflow is:
+
+```bash
+venv bio
+npm run db:prepare-sample
+npm run db:seed:local
+npm run r2:prepare-sample
+npm run r2:seed:local
+npm run worker:dev
+# In a second terminal:
+npm run pages:dev
+```
+
+After local approval, the project owner prepares and seeds production data with `db:prepare-full`, `db:seed:remote`, `r2:prepare-full`, and `r2:seed:remote`. Worker and Pages deployments happen through the GitHub/Cloudflare integration, not through a manual deployment script.
 
 ## Reference
 

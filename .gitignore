@@ -3,8 +3,14 @@ genome_ids/
 notebooks/
 raw_zip_files/
 scripts/
-database/
+database/*
+!database/build_db.sql
+!database/build_sample_db.sql
 **/.wrangler/
 node_modules/
+__pycache__/
+*.py[cod]
 .DS_Store
+._*
+**/._*
 downloads/
