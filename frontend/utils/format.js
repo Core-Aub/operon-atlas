@@ -48,6 +48,14 @@ export function formatNumber(value, withGrouping = true) {
   return withGrouping ? number.toLocaleString() : String(number);
 }
 
+export function pluralize(value, singular, plural = `${singular}s`) {
+  return Number(value) === 1 ? singular : plural;
+}
+
+export function formatCount(value, singular, plural = `${singular}s`) {
+  return `${formatNumber(value)} ${pluralize(value, singular, plural)}`;
+}
+
 export function formatPercent(value, maximumFractionDigits = 2) {
   const number = Number(value);
   if (!Number.isFinite(number)) {
@@ -63,8 +71,7 @@ export function formatSupport(count, total) {
 }
 
 export function formatGeneSupport(count, annotatedGeneCount) {
-  const total = Number(annotatedGeneCount);
-  return `${formatSupport(count, annotatedGeneCount)} annotated ${total === 1 ? "gene" : "genes"}`;
+  return `${formatSupport(count, annotatedGeneCount)} annotated ${pluralize(annotatedGeneCount, "gene")}`;
 }
 
 export function formatClassPath(...parts) {

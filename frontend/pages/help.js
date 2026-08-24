@@ -251,9 +251,15 @@ export function renderHelp(sectionId = "") {
           Family-level summaries aggregate structured subsystem and pathway evidence across annotated
           occurrences. <strong>Occurrence support</strong> is the number and fraction of annotated
           occurrences supporting an item. <strong>Average annotated-gene share</strong> is the mean
-          share of annotated genes supporting it. Evidence is displayed only when it passes the
-          site’s family-summary thresholds, so the absence of a row is not evidence that a function
-          is biologically absent.
+          share of annotated genes supporting it. To keep the summary focused on evidence that is
+          recurrent across the family, a subsystem or pathway must occur in at least 20% of annotated
+          occurrences. It must also have either an average annotated-gene share of at least 5% or
+          strong support in at least 20% of annotated occurrences. <strong>Strong support</strong>
+          means that the item accounts for at least 25% of the annotated genes in an occurrence. The
+          summary ranks qualifying items by annotated-gene share and occurrence support and shows at
+          most the top three subsystems and top three pathways. These are display thresholds, not
+          biological cutoffs: evidence may exist below them, and the absence of a displayed row does
+          not mean that a function is biologically absent.
         </p>
       </section>
 

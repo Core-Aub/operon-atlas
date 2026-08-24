@@ -17,6 +17,7 @@ export function renderOperonFunctionalSummary(summary) {
     return renderFunctionalSummaryBlock(
       "Functional Evidence Summary",
       `<div class="functional-summary-empty">No functional evidence available for this operon family.</div>`,
+      "annotations",
     );
   }
 
@@ -28,9 +29,10 @@ export function renderOperonFunctionalSummary(summary) {
       <div class="functional-summary-stack">
         ${renderOperonEvidenceTable("Subsystems", "Subsystem", normalized.subsystems, subsystemName, subsystemContext)}
         ${renderOperonPathwayEvidenceTable(normalized.pathways)}
-        ${functionRowCount ? "" : `<div class="functional-summary-empty">No subsystem or pathway evidence passed the display thresholds.</div>`}
+        ${functionRowCount ? "" : `<div class="functional-summary-empty">No subsystem or pathway evidence passed the display thresholds. <a class="functional-summary-learn-more" href="#help/annotations">Learn more</a></div>`}
       </div>
     `,
+    "annotations",
   );
 }
 
@@ -192,10 +194,11 @@ function finalizeOccurrenceGroups(groups, annotatedGeneCount) {
     });
 }
 
-function renderFunctionalSummaryBlock(title, body) {
+function renderFunctionalSummaryBlock(title, body, helpAnchor = "") {
   return `
     <div class="functional-summary-header">
       <h2>${escapeHtml(title)}</h2>
+      ${helpAnchor ? `<a class="concept-help-link" href="#help/${encodeURIComponent(helpAnchor)}" aria-label="Help about ${escapeHtml(title)}" title="Learn more">?</a>` : ""}
     </div>
     ${body}
   `;

@@ -42,7 +42,7 @@ import {
 import {
   renderGenomeViewer,
   setGenomeViewerData,
-} from "../viewers/genome-viewer.js";
+} from "../viewers/genome-viewer.js?v=1";
 import { emptyTableRow, escapeHtml } from "../utils/html.js";
 import {
   formatNumber,

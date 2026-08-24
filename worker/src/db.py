@@ -2,6 +2,7 @@ import re
 
 
 PAGE_SIZE = 20
+TAXONOMY_PAGE_SIZE = 5
 SEARCH_PREVIEW_SIZE = 5
 MIN_GENE_COUNT = 1
 MAX_GENE_COUNT = 10000
@@ -1997,7 +1998,7 @@ async def get_operon_taxonomy(db, operon_id, genera_page):
         (operon_id,),
     )
 
-    genera_offset = (genera_page - 1) * PAGE_SIZE
+    genera_offset = (genera_page - 1) * TAXONOMY_PAGE_SIZE
     genera_rows = await run_all(
         db,
         """
@@ -2027,7 +2028,7 @@ async def get_operon_taxonomy(db, operon_id, genera_page):
           taxon_id
         LIMIT ? OFFSET ?
         """,
-        (operon_id, PAGE_SIZE, genera_offset),
+        (operon_id, TAXONOMY_PAGE_SIZE, genera_offset),
     )
 
     def serialize_taxon_breakdown(row):
@@ -2061,7 +2062,7 @@ async def get_operon_taxonomy(db, operon_id, genera_page):
         "phyla": [serialize_taxon_breakdown(row) for row in phyla],
         "genera": {
             "page": genera_page,
-            "pageSize": PAGE_SIZE,
+            "pageSize": TAXONOMY_PAGE_SIZE,
             "total": int(summary["genus_count"]),
             "items": [
                 serialize_taxon_breakdown(row)

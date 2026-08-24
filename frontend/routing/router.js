@@ -1,10 +1,10 @@
 import { app, navLinks } from "../dom.js";
 import { renderDownloads } from "../pages/downloads.js?v=1";
-import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js?v=1";
-import { renderHelp } from "../pages/help.js?v=5";
+import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js?v=2";
+import { renderHelp } from "../pages/help.js?v=6";
 import { renderHome } from "../pages/home.js?v=2";
-import { renderOccurrenceDetail } from "../pages/occurrence.js?v=8";
-import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=8";
+import { renderOccurrenceDetail } from "../pages/occurrence.js?v=9";
+import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=10";
 import { renderSearch } from "../pages/search.js?v=1";
 import { getPage, parseHash } from "./hash.js";
 import {

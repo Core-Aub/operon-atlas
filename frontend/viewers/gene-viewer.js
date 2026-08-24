@@ -62,13 +62,20 @@ export function renderGeneViewer(genes = currentGeneViewerGenes) {
       </div>
       <div class="viewer-status-group">
         <span class="viewer-status gene-contig-status" data-gene-contig-status>${escapeHtml(formatGeneViewerContigLabel())}</span>
-        <span class="viewer-status" data-gene-status>Genes ${currentGeneViewerStart + 1}-${end} of ${genes.length}</span>
+        <span class="viewer-status" data-gene-status>${formatGeneViewerStatus(currentGeneViewerStart, end, genes.length)}</span>
       </div>
     </div>
     <div class="gene-window" data-gene-window>
       ${renderGeneWindow(genes, currentGeneViewerStart)}
     </div>
   `;
+}
+
+function formatGeneViewerStatus(start, end, total) {
+  if (total === 1) {
+    return "Gene 1 of 1";
+  }
+  return `Genes ${start + 1}-${end} of ${total}`;
 }
 
 function renderGeneWindow(genes, start) {
@@ -302,7 +309,11 @@ function updateGeneViewer(start) {
 
   const end = Math.min(currentGeneViewerStart + currentGeneViewerSize, currentGeneViewerGenes.length);
   windowEl.innerHTML = renderGeneWindow(currentGeneViewerGenes, currentGeneViewerStart);
-  statusEl.textContent = `Genes ${currentGeneViewerStart + 1}-${end} of ${currentGeneViewerGenes.length}`;
+  statusEl.textContent = formatGeneViewerStatus(
+    currentGeneViewerStart,
+    end,
+    currentGeneViewerGenes.length,
+  );
   if (contigStatusEl) {
     contigStatusEl.textContent = formatGeneViewerContigLabel();
   }

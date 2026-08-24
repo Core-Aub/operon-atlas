@@ -15,7 +15,7 @@ import {
   renderGeneTableRows,
   renderGeneViewer,
   setGeneViewerGenes,
-} from "../viewers/gene-viewer.js";
+} from "../viewers/gene-viewer.js?v=1";
 import {
   buildOccurrenceFunctionalSummary,
   formatAnnotatedGeneCoverage,

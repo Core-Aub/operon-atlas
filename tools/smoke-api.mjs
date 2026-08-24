@@ -43,6 +43,7 @@ const checks = [
   "/api/operons/3454?page=1&entity_type=pgfam&entity_key=2517283",
   "/api/operons/3454?page=1&search=PGF_02517283",
   "/api/operons/3454/taxonomy?page=1",
+  "/api/operons/3454/taxonomy?page=2",
   "/api/occurrences/66374",
   "/api/occurrences/66374?gene=1003195.11.peg.2553",
   "/api/occurrences/430395",
@@ -269,12 +270,15 @@ for (const path of checks) {
       throw new Error(`${path} did not echo the broad search filter`);
     }
   }
-  if (path === "/api/operons/3454/taxonomy?page=1") {
+  if (path.startsWith("/api/operons/3454/taxonomy?page=")) {
+    const expectedGeneraLength = path.endsWith("page=1") ? 5 : 1;
     if (
       payload?.operonId !== 3454
       || payload?.counts?.genomes < 1
       || !Array.isArray(payload?.phyla)
       || !Array.isArray(payload?.genera?.items)
+      || payload?.genera?.pageSize !== 5
+      || payload.genera.items.length !== expectedGeneraLength
       || typeof payload?.unclassified?.speciesGenomes !== "number"
       || typeof payload?.unclassified?.generaGenomes !== "number"
       || typeof payload?.unclassified?.phylaGenomes !== "number"

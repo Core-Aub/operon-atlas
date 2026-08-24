@@ -131,7 +131,7 @@ The Worker targets Python 3.12+ and uses Cloudflare's Python Workers runtime.
 
 The API is read-only. It accepts `GET` and `OPTIONS`; other methods return `405`. JSON responses include permissive CORS headers. Search values are normalized, limited to 120 characters, and always bound. Catalog searches accept at most eight whitespace-separated terms; each escaped `LIKE` pattern must remain within D1's 50-byte limit. Recognized exact identifiers are parsed before substring matching, so a valid long coordinate-form PATRIC ID is not rejected by the `LIKE` limit.
 
-Pagination is fixed at 20 items per page. Invalid or missing page numbers normalize to page 1.
+Catalog and occurrence pagination is fixed at 20 items per page. The compact genus distribution on an operon-family page uses five items per page. Invalid or missing page numbers normalize to page 1.
 
 ### Endpoints
 
@@ -143,7 +143,7 @@ Pagination is fixed at 20 items per page. Invalid or missing page numbers normal
 | `GET /api/search` | Direct identifier resolution plus grouped entity previews or one paginated entity category | `q`, optional `type`, `page` |
 | `GET /api/operons` | Paginates and filters operon families, including compact taxonomy breadth | `page`, gene-count filters, `genome_key`, organism/product filters, `search`, `entity_type`, `entity_key`, `sort`, `direction` |
 | `GET /api/operons/:operon_id` | Returns one family, functional summary, taxonomy headlines, and paginated matching occurrences | `page`, `product`, `search`, `entity_type`, `entity_key` |
-| `GET /api/operons/:operon_id/taxonomy` | Returns complete phylum distribution, paginated genera, headline counts, and unclassified coverage | `page` (genera page) |
+| `GET /api/operons/:operon_id/taxonomy` | Returns complete phylum distribution, five-per-page genera, headline counts, and unclassified coverage | `page` (genera page) |
 | `GET /api/occurrences/:occurrence_id` | Returns one occurrence and its ordered, annotated genes | optional `gene` exact reconstructed ID to highlight |
 | `GET /api/genomes` | Paginates and searches genomes | `page`, `search`, `sort`, `direction` |
 | `GET /api/genomes/:genome_key` | Returns one genome and aggregate operon/gene counts | None |
@@ -217,7 +217,7 @@ The tracked `tools/normalize_release_data.py` utility is the one-time, fail-clos
 
 All retained Python commands must run in the `bio` environment and use explicit input/output paths.
 
-Taxonomy counts use positive integer taxon IDs, never parsed organism names. Family-genome links are deduplicated before counting, so each genome, species, genus, and phylum contributes at most once per family. Missing or empty rank fields are treated as unclassified coverage and are excluded from rank distributions. Complete phylum and paginated genus distributions are calculated from `genome_taxonomy` at query time to avoid a large materialized family-by-taxon table.
+Taxonomy counts use positive integer taxon IDs, never parsed organism names. Family-genome links are deduplicated before counting, so each genome, species, genus, and phylum contributes at most once per family. Missing or empty rank fields are treated as unclassified coverage and are excluded from the corresponding rank distribution. Complete phylum and paginated genus distributions are calculated from `genome_taxonomy` at query time to avoid a large materialized family-by-taxon table.
 
 ### Rebuilding SQLite databases
 

@@ -24,8 +24,8 @@ import { renderTableLink } from "../components/links.js";
 import {
   getOperonAnnotationCoverageRows,
   renderOperonFunctionalSummary,
-} from "../components/occurrence-functional-summary.js?v=8";
-import { renderPager } from "../components/pager.js";
+} from "../components/occurrence-functional-summary.js?v=9";
+import { renderPager } from "../components/pager.js?v=2";
 import { renderSortableHeader } from "../components/sort.js";
 import {
   COLUMN_INFO,
@@ -33,11 +33,13 @@ import {
 } from "../components/table-header.js";
 import { emptyTableRow, escapeHtml } from "../utils/html.js";
 import {
+  formatCount,
   formatNumber,
   formatOccurrenceId,
   formatPgfamContent,
   formatStableOperonId,
-} from "../utils/format.js";
+  pluralize,
+} from "../utils/format.js?v=2";
 
 export async function renderOperons(page, params = new URLSearchParams(), routeKey = getCurrentRouteKey()) {
   const filters = getOperonFilters(params);
@@ -112,7 +114,7 @@ export async function renderOperonDetail(
 
       ${renderTaxonomySection(taxonomy, data.operon_id, params)}
 
-      <div class="section functional-evidence-section">
+      <div class="section functional-evidence-section operon-functional-evidence-section">
         ${renderInfoTable(getOperonAnnotationCoverageRows(data.functional_summary))}
         ${renderOperonFunctionalSummary(data.functional_summary)}
       </div>
@@ -173,12 +175,17 @@ function renderOperonOccurrenceRow(item) {
 function renderBreadth(counts = {}) {
   return `
     <span class="breadth-summary">
-      <span><strong>${formatNumber(counts.genomes || 0)}</strong> genomes</span>
-      <span><strong>${formatNumber(counts.species || 0)}</strong> species</span>
-      <span><strong>${formatNumber(counts.genera || 0)}</strong> genera</span>
-      <span><strong>${formatNumber(counts.phyla || 0)}</strong> phyla</span>
+      ${renderBreadthCount(counts.genomes, "genome")}
+      ${renderBreadthCount(counts.species, "species", "species")}
+      ${renderBreadthCount(counts.genera, "genus", "genera")}
+      ${renderBreadthCount(counts.phyla, "phylum", "phyla")}
     </span>
   `;
+}
+
+function renderBreadthCount(value, singular, plural) {
+  const count = Number(value) || 0;
+  return `<span><strong>${formatNumber(count)}</strong> ${escapeHtml(pluralize(count, singular, plural))}</span>`;
 }
 
 function renderActiveMatch(entityFilter, search, operonId = null) {
@@ -221,20 +228,22 @@ function renderMatchReasons(reasons) {
 function renderTaxonomySection(taxonomy, operonId, params) {
   const counts = taxonomy?.counts || {};
   const phyla = Array.isArray(taxonomy?.phyla) ? taxonomy.phyla : [];
-  const genera = taxonomy?.genera || { page: 1, pageSize: 20, total: 0, items: [] };
+  const genera = taxonomy?.genera || { page: 1, pageSize: 5, total: 0, items: [] };
+  const phylumLabel = pluralize(phyla.length, "Phylum", "Phyla");
+  const genusLabel = pluralize(genera.total, "Genus", "Genera");
   return `
     <section class="section taxonomy-section">
       ${sectionHeader("Taxonomic breadth")}
       <div class="taxonomy-headlines">
-        ${taxonomyMetric("Genomes", counts.genomes)}
-        ${taxonomyMetric("Species", counts.species)}
-        ${taxonomyMetric("Genera", counts.genera)}
-        ${taxonomyMetric("Phyla", counts.phyla)}
+        ${taxonomyMetric(counts.genomes, "Genome")}
+        ${taxonomyMetric(counts.species, "Species", "Species")}
+        ${taxonomyMetric(counts.genera, "Genus", "Genera")}
+        ${taxonomyMetric(counts.phyla, "Phylum", "Phyla")}
       </div>
       <div class="taxonomy-grid">
         <div>
-          <h3>Phyla</h3>
-          <div class="panel"><div class="table-wrap">
+          ${renderTaxonomySubheader(phyla.length, "Phylum", "Phyla")}
+          <div class="panel"><div class="table-wrap taxonomy-table-scroll" role="region" aria-label="${phylumLabel} distribution" tabindex="0">
             <table>
               <thead><tr><th>Phylum</th><th>Genomes</th><th>Species</th></tr></thead>
               <tbody>${phyla.map(renderTaxonRow).join("") || emptyTableRow(3)}</tbody>
@@ -242,11 +251,11 @@ function renderTaxonomySection(taxonomy, operonId, params) {
           </div></div>
         </div>
         <div>
-          <div class="taxonomy-subheader">
-            <h3>Genera</h3>
+          <div class="taxonomy-subheader taxonomy-genera-subheader">
+            <h3>${escapeHtml(genusLabel)}</h3>
             ${renderGeneraPager(operonId, genera, params)}
           </div>
-          <div class="panel"><div class="table-wrap">
+          <div class="panel"><div class="table-wrap" role="region" aria-label="${genusLabel} distribution">
             <table>
               <thead><tr><th>Genus</th><th>Genomes</th><th>Species</th></tr></thead>
               <tbody>${(genera.items || []).map(renderTaxonRow).join("") || emptyTableRow(3)}</tbody>
@@ -254,13 +263,34 @@ function renderTaxonomySection(taxonomy, operonId, params) {
           </div></div>
         </div>
       </div>
-      ${renderUnclassifiedCoverage(taxonomy?.unclassified)}
+      ${renderUnclassifiedCoverage(taxonomy?.unclassified, counts.genomes)}
     </section>
   `;
 }
 
-function taxonomyMetric(label, value) {
-  return `<div class="taxonomy-metric"><strong>${formatNumber(value || 0)}</strong><span>${escapeHtml(label)}</span></div>`;
+function renderTaxonomySubheader(total, singular, plural) {
+  const label = pluralize(total, singular, plural);
+  const note = total > 5
+    ? `Top 5 visible; scroll to view all ${formatNumber(total)}`
+    : `${formatNumber(total)} total`;
+  return `
+    <div class="taxonomy-subheader">
+      <h3>${escapeHtml(label)}</h3>
+      <span class="taxonomy-list-note muted">${note}</span>
+    </div>
+  `;
+}
+
+function renderGeneraPager(operonId, genera, params) {
+  const pagerParams = new URLSearchParams(params);
+  pagerParams.delete("genera_page");
+  return renderPager(`operons/${operonId}`, genera, pagerParams, "genera_page");
+}
+
+function taxonomyMetric(value, singular, plural) {
+  const count = Number(value) || 0;
+  const label = pluralize(count, singular, plural);
+  return `<div class="taxonomy-metric"><strong>${formatNumber(count)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
 function renderTaxonRow(item) {
@@ -273,38 +303,24 @@ function renderTaxonRow(item) {
   `;
 }
 
-function renderGeneraPager(operonId, genera, params) {
-  if (Number(genera.total || 0) <= Number(genera.pageSize || 20)) {
-    return `<span class="muted">Top ${formatNumber(genera.total || 0)}</span>`;
-  }
-  const current = Number(genera.page || 1);
-  const pageSize = Number(genera.pageSize || 20);
-  const total = Number(genera.total || 0);
-  const nextParams = new URLSearchParams(params);
-  const previousParams = new URLSearchParams(params);
-  nextParams.set("genera_page", String(current + 1));
-  previousParams.set("genera_page", String(Math.max(1, current - 1)));
-  return `
-    <span class="taxonomy-pager">
-      <span>${formatNumber((current - 1) * pageSize + 1)}-${formatNumber(Math.min(current * pageSize, total))}/${formatNumber(total)}</span>
-      ${current > 1 ? `<a href="#operons/${operonId}?${previousParams.toString()}">Previous</a>` : ""}
-      ${current * pageSize < total ? `<a href="#operons/${operonId}?${nextParams.toString()}">Show more</a>` : ""}
-    </span>
-  `;
-}
-
-function renderUnclassifiedCoverage(unclassified = {}) {
+function renderUnclassifiedCoverage(unclassified = {}, genomeCount = 0) {
   const species = Number(unclassified.speciesGenomes || 0);
   const genera = Number(unclassified.generaGenomes || unclassified.genusGenomes || 0);
   const phyla = Number(unclassified.phylaGenomes || unclassified.phylumGenomes || 0);
   if (!species && !genera && !phyla) {
     return "";
   }
+  const distinctGenomes = formatCount(genomeCount, "distinct genome", "distinct genomes");
   return `
     <p class="taxonomy-unclassified muted">
-      Unclassified coverage: ${formatNumber(species)} genomes without species, ${formatNumber(genera)} without genus, and ${formatNumber(phyla)} without phylum assignment.
+      Taxonomy information is incomplete for this operon family. Among its ${distinctGenomes}, ${formatMissingTaxonomyAssignment(species, "BV-BRC species")}, ${formatMissingTaxonomyAssignment(genera, "genus")}, and ${formatMissingTaxonomyAssignment(phyla, "phylum")}. Genomes without an assignment are excluded only from the corresponding rank count and table above.
     </p>
   `;
+}
+
+function formatMissingTaxonomyAssignment(value, rank) {
+  const count = Number(value) || 0;
+  return `${formatCount(count, "genome")} ${count === 1 ? "lacks" : "lack"} a ${rank} assignment`;
 }
 
 function parsePositivePage(value) {

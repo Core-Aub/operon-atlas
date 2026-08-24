@@ -227,6 +227,9 @@ function formatGenomeViewerStatus(range, total) {
   if (!total) {
     return "No occurrences";
   }
+  if (total === 1) {
+    return "Occurrence 1 of 1";
+  }
   return `Occurrences ${formatNumber(range.start + 1)}-${formatNumber(range.end)} of ${formatNumber(total)}`;
 }
 
