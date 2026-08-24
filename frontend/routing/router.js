@@ -1,5 +1,5 @@
 import { app, navLinks } from "../dom.js";
-import { renderDownloads } from "../pages/downloads.js?v=1";
+import { renderDownloads } from "../pages/downloads.js?v=2";
 import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js?v=2";
 import { renderHelp } from "../pages/help.js?v=6";
 import { renderHome } from "../pages/home.js?v=2";

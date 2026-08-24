@@ -3,7 +3,7 @@ import { pageHeader, renderInfoTable, sectionHeader } from "../components/layout
 import { renderTableLink } from "../components/links.js";
 import { app } from "../dom.js";
 import { isCurrentRoute } from "../routing/route-state.js";
-import { formatNumber } from "../utils/format.js";
+import { formatBytes, formatNumber } from "../utils/format.js?v=3";
 import { emptyTableRow, escapeHtml } from "../utils/html.js";
 import {
   COLUMN_INFO,
@@ -77,13 +77,17 @@ export async function renderDownloads(routeKey) {
 
 
 function renderDatasetRow(item) {
+  const exactBytes = formatNumber(item.compressed_bytes);
+  const sizeTitle = exactBytes
+    ? ` title="${escapeHtml(`${exactBytes} bytes`)}"`
+    : "";
   return `
     <tr>
       <td>${escapeHtml(item.dataset || "")}</td>
       <td>${escapeHtml(item.description || "")}</td>
       <td>${escapeHtml(item.format || "")}</td>
       <td class="numeric">${formatNumber(item.rows)}</td>
-      <td class="numeric">${escapeHtml(item.compressed_size || "")}</td>
+      <td class="numeric"${sizeTitle}>${escapeHtml(formatBytes(item.compressed_bytes))}</td>
       <td><code class="checksum">${escapeHtml(item.sha256 || "")}</code></td>
       <td>${renderDownloadLink(item.download_url, item.filename)}</td>
     </tr>

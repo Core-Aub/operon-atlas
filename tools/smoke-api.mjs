@@ -158,6 +158,8 @@ for (const path of checks) {
       || payload?.datasets?.some((item) => (
         !item.download_url?.startsWith("https://downloads.operonatlas.org/releases/1.1.0/")
         || item.object_key !== `releases/1.1.0/${item.filename}`
+        || !Number.isSafeInteger(item.compressed_bytes)
+        || item.compressed_bytes <= 0
       ))
       || payload?.documentation?.filename !== "data_dictionary.tsv"
     ) {

@@ -48,6 +48,28 @@ export function formatNumber(value, withGrouping = true) {
   return withGrouping ? number.toLocaleString() : String(number);
 }
 
+export function formatBytes(value) {
+  const bytes = Number(value);
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return "";
+  }
+  if (bytes < 1024) {
+    return `${formatNumber(bytes)} ${pluralize(bytes, "byte")}`;
+  }
+
+  const units = ["KiB", "MiB", "GiB", "TiB"];
+  let scaled = bytes;
+  let unitIndex = -1;
+  do {
+    scaled /= 1024;
+    unitIndex += 1;
+  } while (scaled >= 1024 && unitIndex < units.length - 1);
+
+  return `${scaled.toLocaleString(undefined, {
+    maximumFractionDigits: 1,
+  })} ${units[unitIndex]}`;
+}
+
 export function pluralize(value, singular, plural = `${singular}s`) {
   return Number(value) === 1 ? singular : plural;
 }

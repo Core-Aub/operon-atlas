@@ -8,7 +8,7 @@ import {
   handleGenomeSearchSubmit,
 } from "./pages/genomes.js";
 import { handleReturnClick } from "./routing/navigation.js";
-import { renderRoute } from "./routing/router.js?v=15";
+import { renderRoute } from "./routing/router.js?v=16";
 import {
   handleGlobalSearchClear,
   handleGlobalSearchSubmit,
