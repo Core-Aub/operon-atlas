@@ -169,7 +169,7 @@ def build_annotation_aggregates(connection: sqlite3.Connection) -> None:
         CREATE TEMP TABLE download_gene_subsystems AS
         WITH annotations AS (
             SELECT DISTINCT
-                gs.genome_key, gs.contig_id, gs.gene_start, gs.gene_end, gs.strand,
+                gs.gene_key,
                 role.role_name,
                 subsystem.subsystem_name,
                 TRIM(
@@ -184,40 +184,40 @@ def build_annotation_aggregates(connection: sqlite3.Connection) -> None:
             LEFT JOIN subsystem_reference AS subsystem USING (subsystem_key)
             LEFT JOIN subsystem_classes AS class USING (subsystem_class_key)
         ), keys AS (
-            SELECT DISTINCT genome_key, contig_id, gene_start, gene_end, strand FROM annotations
+            SELECT DISTINCT gene_key FROM annotations
         )
         SELECT
             keys.*,
-            COALESCE((SELECT GROUP_CONCAT(role_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT role_name FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(role_name,'')!='' ORDER BY role_name)), '') AS roles,
-            COALESCE((SELECT GROUP_CONCAT(subsystem_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT subsystem_name FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(subsystem_name,'')!='' ORDER BY subsystem_name)), '') AS subsystems,
-            COALESCE((SELECT GROUP_CONCAT(class_path, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT class_path FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(class_path,'')!='' ORDER BY class_path)), '') AS subsystem_classes
+            COALESCE((SELECT GROUP_CONCAT(role_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT role_name FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(role_name,'')!='' ORDER BY role_name)), '') AS roles,
+            COALESCE((SELECT GROUP_CONCAT(subsystem_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT subsystem_name FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(subsystem_name,'')!='' ORDER BY subsystem_name)), '') AS subsystems,
+            COALESCE((SELECT GROUP_CONCAT(class_path, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT class_path FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(class_path,'')!='' ORDER BY class_path)), '') AS subsystem_classes
         FROM keys;
 
         CREATE INDEX temp.idx_download_gene_subsystems
-        ON download_gene_subsystems(genome_key, contig_id, gene_start, gene_end, strand);
+        ON download_gene_subsystems(gene_key);
 
         CREATE TEMP TABLE download_gene_pathways AS
         WITH annotations AS (
             SELECT DISTINCT
-                gp.genome_key, gp.contig_id, gp.gene_start, gp.gene_end, gp.strand,
+                gp.gene_key,
                 ec.ec_number, pathway.pathway_id, pathway.pathway_name, class.pathway_class
             FROM gene_pathways AS gp
             LEFT JOIN ec_numbers AS ec USING (ec_key)
             LEFT JOIN pathway_reference AS pathway USING (pathway_key)
             LEFT JOIN main.pathway_classes AS class USING (pathway_class_key)
         ), keys AS (
-            SELECT DISTINCT genome_key, contig_id, gene_start, gene_end, strand FROM annotations
+            SELECT DISTINCT gene_key FROM annotations
         )
         SELECT
             keys.*,
-            COALESCE((SELECT GROUP_CONCAT(ec_number, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT ec_number FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(ec_number,'')!='' ORDER BY ec_number)), '') AS ec_numbers,
-            COALESCE((SELECT GROUP_CONCAT(pathway_id, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_id FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(pathway_id,'')!='' ORDER BY pathway_id)), '') AS pathway_ids,
-            COALESCE((SELECT GROUP_CONCAT(pathway_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_name FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(pathway_name,'')!='' ORDER BY pathway_name)), '') AS pathway_names,
-            COALESCE((SELECT GROUP_CONCAT(pathway_class, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_class FROM annotations AS a WHERE a.genome_key=keys.genome_key AND a.contig_id=keys.contig_id AND a.gene_start=keys.gene_start AND a.gene_end=keys.gene_end AND a.strand=keys.strand AND COALESCE(pathway_class,'')!='' ORDER BY pathway_class)), '') AS pathway_classes
+            COALESCE((SELECT GROUP_CONCAT(ec_number, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT ec_number FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(ec_number,'')!='' ORDER BY ec_number)), '') AS ec_numbers,
+            COALESCE((SELECT GROUP_CONCAT(pathway_id, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_id FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(pathway_id,'')!='' ORDER BY pathway_id)), '') AS pathway_ids,
+            COALESCE((SELECT GROUP_CONCAT(pathway_name, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_name FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(pathway_name,'')!='' ORDER BY pathway_name)), '') AS pathway_names,
+            COALESCE((SELECT GROUP_CONCAT(pathway_class, '{MULTI_VALUE_SEPARATOR}') FROM (SELECT DISTINCT pathway_class FROM annotations AS a WHERE a.gene_key=keys.gene_key AND COALESCE(pathway_class,'')!='' ORDER BY pathway_class)), '') AS pathway_classes
         FROM keys;
 
         CREATE INDEX temp.idx_download_gene_pathways
-        ON download_gene_pathways(genome_key, contig_id, gene_start, gene_end, strand);
+        ON download_gene_pathways(gene_key);
         """
     )
 
@@ -314,17 +314,9 @@ JOIN genomes AS genome ON genome.genome_key = gene.genome_key
 JOIN contigs AS contig ON contig.contig_id = gene.contig_id
 LEFT JOIN products AS product USING (product_id)
 LEFT JOIN temp.download_gene_subsystems AS subsystem
-  ON subsystem.genome_key = gene.genome_key
- AND subsystem.contig_id = gene.contig_id
- AND subsystem.gene_start = gene.start
- AND subsystem.gene_end = gene."end"
- AND subsystem.strand = gene.strand
+  ON subsystem.gene_key = gene.gene_key
 LEFT JOIN temp.download_gene_pathways AS pathway
-  ON pathway.genome_key = gene.genome_key
- AND pathway.contig_id = gene.contig_id
- AND pathway.gene_start = gene.start
- AND pathway.gene_end = gene."end"
- AND pathway.strand = gene.strand
+  ON pathway.gene_key = gene.gene_key
 ORDER BY gene.occurrence_id, gene_order_in_operon
 """
 

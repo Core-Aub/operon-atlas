@@ -60,7 +60,7 @@ npm run worker:dev
 npm run pages:dev
 ```
 
-After local approval, the project owner prepares and seeds production data with `db:prepare-full`, `db:seed:remote`, `r2:prepare-full`, and `r2:seed:remote`. Worker and Pages deployments happen through the GitHub/Cloudflare integration, not through a manual deployment script.
+For a full local D1 correctness check, run `db:prepare-full` followed by `db:seed-full:local`. After local approval, the project owner runs `db:prepare-full` if needed, then `db:seed:remote`, `r2:prepare-full`, and `r2:seed:remote`. The full D1 preparation command creates one checksummed sequence—schema, indexes on empty tables, table-based data parts, and final planner optimization—so local and remote imports use the same files. Worker and Pages deployments happen through the GitHub/Cloudflare integration, not through a manual deployment script.
 
 ## Reference
 

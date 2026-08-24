@@ -52,6 +52,7 @@ CREATE TABLE occurrences (
 );
 
 CREATE TABLE occurrence_genes (
+    gene_key INTEGER PRIMARY KEY,
     occurrence_id INTEGER NOT NULL,
     genome_key INTEGER NOT NULL,
     peg_num INTEGER NOT NULL,
@@ -61,7 +62,7 @@ CREATE TABLE occurrence_genes (
     strand INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     pgfam_num INTEGER NOT NULL,
-    PRIMARY KEY (occurrence_id, peg_num),
+    UNIQUE (occurrence_id, peg_num),
     FOREIGN KEY (occurrence_id) REFERENCES occurrences(occurrence_id),
     FOREIGN KEY (genome_key) REFERENCES genomes(genome_key),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
@@ -79,7 +80,9 @@ CREATE TABLE operon_products (
 CREATE TABLE genomes (
     genome_key INTEGER PRIMARY KEY,
     genome_id TEXT NOT NULL UNIQUE,
-    organism_name TEXT
+    organism_name TEXT,
+    operon_count INTEGER NOT NULL CHECK (operon_count >= 0),
+    gene_count INTEGER NOT NULL CHECK (gene_count >= 0)
 );
 
 CREATE TABLE products (
@@ -117,29 +120,16 @@ CREATE TABLE pathway_reference (
 );
 
 CREATE TABLE gene_pathways (
-    genome_key INTEGER NOT NULL,
-    contig_id INTEGER NOT NULL,
-    gene_start INTEGER NOT NULL,
-    gene_end INTEGER NOT NULL,
-    strand INTEGER NOT NULL,
+    gene_key INTEGER NOT NULL,
     ec_key INTEGER NOT NULL,
     pathway_key INTEGER NOT NULL,
 
-    PRIMARY KEY (
-        genome_key,
-        contig_id,
-        gene_start,
-        gene_end,
-        strand,
-        ec_key,
-        pathway_key
-    ),
+    PRIMARY KEY (gene_key, ec_key, pathway_key),
 
-    FOREIGN KEY (genome_key) REFERENCES genomes(genome_key),
-    FOREIGN KEY (contig_id) REFERENCES contigs(contig_id),
+    FOREIGN KEY (gene_key) REFERENCES occurrence_genes(gene_key),
     FOREIGN KEY (ec_key) REFERENCES ec_numbers(ec_key),
     FOREIGN KEY (pathway_key) REFERENCES pathway_reference(pathway_key)
-);
+) WITHOUT ROWID;
 
 
 -- ============================================================
@@ -168,29 +158,16 @@ CREATE TABLE subsystem_reference (
 );
 
 CREATE TABLE gene_subsystems (
-    genome_key INTEGER NOT NULL,
-    contig_id INTEGER NOT NULL,
-    gene_start INTEGER NOT NULL,
-    gene_end INTEGER NOT NULL,
-    strand INTEGER NOT NULL,
+    gene_key INTEGER NOT NULL,
     role_key INTEGER NOT NULL,
     subsystem_key INTEGER NOT NULL,
 
-    PRIMARY KEY (
-        genome_key,
-        contig_id,
-        gene_start,
-        gene_end,
-        strand,
-        role_key,
-        subsystem_key
-    ),
+    PRIMARY KEY (gene_key, role_key, subsystem_key),
 
-    FOREIGN KEY (genome_key) REFERENCES genomes(genome_key),
-    FOREIGN KEY (contig_id) REFERENCES contigs(contig_id),
+    FOREIGN KEY (gene_key) REFERENCES occurrence_genes(gene_key),
     FOREIGN KEY (role_key) REFERENCES subsystem_roles(role_key),
     FOREIGN KEY (subsystem_key) REFERENCES subsystem_reference(subsystem_key)
-);
+) WITHOUT ROWID;
 
 DROP TABLE IF EXISTS operon_function_coverage;
 DROP TABLE IF EXISTS operon_subsystem_support;
@@ -413,8 +390,8 @@ CREATE TABLE search_entities (
 .import --skip 1 sample_data/subsystem_reference.tsv subsystem_reference
 .import --skip 1 sample_data/gene_subsystems.tsv gene_subsystems
 
--- Four legacy full-data rows use an empty value for this nullable foreign key.
--- Apply the same normalization in both schemas so they remain equivalent.
+-- Four legacy rows use an empty value for this nullable foreign key. Store
+-- the canonical nullable representation in every rebuilt database.
 UPDATE subsystem_reference
 SET subsystem_class_key = NULL
 WHERE subsystem_class_key = '';
@@ -450,31 +427,8 @@ ON occurrence_genes(genome_key, contig_id, start);
 CREATE INDEX idx_operon_products_product
 ON operon_products(product_id);
 
-CREATE INDEX idx_products_product
-ON products(product);
-
 CREATE INDEX idx_contigs_genome
 ON contigs(genome_id);
-
--- Fast lookup of EC/pathway annotations by gene coordinate.
-CREATE INDEX idx_gene_pathways_gene
-ON gene_pathways (
-    genome_key,
-    contig_id,
-    gene_start,
-    gene_end,
-    strand
-);
-
--- Fast lookup of subsystem annotations by gene coordinate.
-CREATE INDEX idx_gene_subsystems_gene
-ON gene_subsystems (
-    genome_key,
-    contig_id,
-    gene_start,
-    gene_end,
-    strand
-);
 
 CREATE INDEX idx_genome_taxonomy_phylum
 ON genome_taxonomy(phylum_taxon_id, genome_key);
@@ -487,9 +441,6 @@ ON genome_taxonomy(species_taxon_id, genome_key);
 
 CREATE INDEX idx_search_entities_identifier
 ON search_entities(identifier COLLATE NOCASE, entity_type, entity_key);
-
-CREATE INDEX idx_search_entities_text
-ON search_entities(search_text COLLATE NOCASE, entity_type, entity_key);
 
 CREATE INDEX idx_operon_pathway_support_pathway
 ON operon_pathway_support(pathway_key, operon_id);
@@ -504,12 +455,12 @@ CREATE INDEX idx_operon_subsystem_class_support_class
 ON operon_subsystem_class_support(subsystem_class_key, operon_id);
 
 INSERT INTO build_info (key, value) VALUES
-('schema_version', 'operonatlas_v4'),
+('schema_version', 'operonatlas_v5'),
 ('operon_definition', 'Stable operons are PGFam multiset signatures: gene order ignored, duplicate PGFam copies preserved.'),
 ('occurrence_definition', 'A genome-specific predicted operon instance. occurrence_id was previously Universal_Operon_ID.'),
 ('included_occurrences', 'gene_count >= 2, complete PGFam annotation.'),
 ('source_files', 'All TSV files imported by database/build_sample_db.sql from database/sample_data/.'),
-('functional_annotations', 'Gene-level EC/pathway and BV-BRC subsystem annotations are stored in normalized functional tables and joined to occurrence genes by genome_key, contig_id, start/end coordinates, and strand.'),
+('functional_annotations', 'Gene-level EC/pathway and BV-BRC subsystem annotations are stored in normalized functional tables and joined to occurrence genes by deterministic gene_key.'),
 ('search_taxonomy', 'Genome taxonomy, family breadth, PGFam/EC/role reverse support, and the search entity catalog are canonical schema tables imported from database/sample_data/.');
 -- ============================================================
 -- Sanity checks
@@ -535,12 +486,12 @@ SELECT 'subsystem_classes', COUNT(*) FROM subsystem_classes;
 
 SELECT
     'genes_with_pathway_annotations',
-    COUNT(DISTINCT genome_key || ':' || contig_id || ':' || gene_start || ':' || gene_end || ':' || strand)
+    COUNT(DISTINCT gene_key)
 FROM gene_pathways;
 
 SELECT
     'genes_with_subsystem_annotations',
-    COUNT(DISTINCT genome_key || ':' || contig_id || ':' || gene_start || ':' || gene_end || ':' || strand)
+    COUNT(DISTINCT gene_key)
 FROM gene_subsystems;
 
 SELECT 'operon_function_coverage' AS table_name, COUNT(*) FROM operon_function_coverage

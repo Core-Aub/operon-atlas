@@ -45,6 +45,7 @@ const checks = [
   "/api/operons/3454/taxonomy?page=1",
   "/api/occurrences/66374",
   "/api/occurrences/66374?gene=1003195.11.peg.2553",
+  "/api/occurrences/430395",
   "/api/genomes?page=1",
   ...genomeSortCases.map(([sort, direction]) => (
     `/api/genomes?page=1&sort=${sort}&direction=${direction}`
@@ -295,6 +296,20 @@ for (const path of checks) {
       || highlighted[0].gene_id !== "1003195.11.peg.2553"
     ) {
       throw new Error(`${path} did not highlight exactly the requested gene`);
+    }
+  }
+  if (path === "/api/occurrences/430395") {
+    const pathwayGene = (payload?.genes || []).find((gene) => gene.peg_num === 306);
+    const subsystemGene = (payload?.genes || []).find((gene) => gene.peg_num === 307);
+    if (
+      pathwayGene?.pathways?.length !== 1
+      || pathwayGene.pathways[0]?.ec_number !== "4.1.1.2"
+      || pathwayGene.pathways[0]?.pathway_id !== "00630"
+      || subsystemGene?.subsystems?.length !== 1
+      || subsystemGene.subsystems[0]?.role_id !== "Cys-tRNA(Pro)_deacylase_YbaK"
+      || subsystemGene.subsystems[0]?.subsystem_id !== "tRNA_aminoacylation,_Pro"
+    ) {
+      throw new Error(`${path} changed the representative annotation payload`);
     }
   }
   if (path.startsWith("/api/genomes?page=1&sort=")) {

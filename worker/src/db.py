@@ -342,23 +342,12 @@ def format_pgfam_signature(signature):
     return pgfams
 
 
-def gene_annotation_key(row, start_field="start", end_field="end"):
-    return (
-        f"{row['genome_key']}|{row['contig_id']}|"
-        f"{row[start_field]}|{row[end_field]}|{row['strand']}"
-    )
-
-
 async def fetch_occurrence_pathways(db, occurrence_id):
     rows = await run_all(
         db,
         """
         SELECT
-          og.genome_key,
-          og.contig_id,
-          og.start AS gene_start,
-          og.end AS gene_end,
-          og.strand,
+          og.gene_key,
           e.ec_number,
           e.ec_description,
           pr.pathway_id,
@@ -366,11 +355,7 @@ async def fetch_occurrence_pathways(db, occurrence_id):
           pc.pathway_class
         FROM occurrence_genes AS og
         JOIN gene_pathways AS gp
-          ON gp.genome_key = og.genome_key
-         AND gp.contig_id = og.contig_id
-         AND gp.gene_start = og.start
-         AND gp.gene_end = og.end
-         AND gp.strand = og.strand
+          ON gp.gene_key = og.gene_key
         LEFT JOIN ec_numbers AS e
           ON e.ec_key = gp.ec_key
         LEFT JOIN pathway_reference AS pr
@@ -386,7 +371,7 @@ async def fetch_occurrence_pathways(db, occurrence_id):
     pathways_by_gene = {}
     seen_by_gene = {}
     for row in rows:
-        key = gene_annotation_key(row, "gene_start", "gene_end")
+        key = int(row["gene_key"])
         annotation_key = (row["ec_number"], row["pathway_id"])
         seen = seen_by_gene.setdefault(key, set())
         if annotation_key in seen:
@@ -407,11 +392,7 @@ async def fetch_occurrence_subsystems(db, occurrence_id):
         db,
         """
         SELECT
-          og.genome_key,
-          og.contig_id,
-          og.start AS gene_start,
-          og.end AS gene_end,
-          og.strand,
+          og.gene_key,
           sr.role_id,
           sr.role_name,
           sref.subsystem_id,
@@ -421,11 +402,7 @@ async def fetch_occurrence_subsystems(db, occurrence_id):
           sc.subsystem_subclass
         FROM occurrence_genes AS og
         JOIN gene_subsystems AS gs
-          ON gs.genome_key = og.genome_key
-         AND gs.contig_id = og.contig_id
-         AND gs.gene_start = og.start
-         AND gs.gene_end = og.end
-         AND gs.strand = og.strand
+          ON gs.gene_key = og.gene_key
         LEFT JOIN subsystem_roles AS sr
           ON sr.role_key = gs.role_key
         LEFT JOIN subsystem_reference AS sref
@@ -441,7 +418,7 @@ async def fetch_occurrence_subsystems(db, occurrence_id):
     subsystems_by_gene = {}
     seen_by_gene = {}
     for row in rows:
-        key = gene_annotation_key(row, "gene_start", "gene_end")
+        key = int(row["gene_key"])
         annotation_key = (row["role_id"], row["subsystem_id"])
         seen = seen_by_gene.setdefault(key, set())
         if annotation_key in seen:
@@ -1660,11 +1637,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_pathways gp_entity
-              ON gp_entity.genome_key = og_entity.genome_key
-             AND gp_entity.contig_id = og_entity.contig_id
-             AND gp_entity.gene_start = og_entity.start
-             AND gp_entity.gene_end = og_entity.end
-             AND gp_entity.strand = og_entity.strand
+              ON gp_entity.gene_key = og_entity.gene_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
               AND gp_entity.ec_key = ?
           )
@@ -1674,11 +1647,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_pathways gp_entity
-              ON gp_entity.genome_key = og_entity.genome_key
-             AND gp_entity.contig_id = og_entity.contig_id
-             AND gp_entity.gene_start = og_entity.start
-             AND gp_entity.gene_end = og_entity.end
-             AND gp_entity.strand = og_entity.strand
+              ON gp_entity.gene_key = og_entity.gene_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
               AND gp_entity.pathway_key = ?
           )
@@ -1688,11 +1657,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_pathways gp_entity
-              ON gp_entity.genome_key = og_entity.genome_key
-             AND gp_entity.contig_id = og_entity.contig_id
-             AND gp_entity.gene_start = og_entity.start
-             AND gp_entity.gene_end = og_entity.end
-             AND gp_entity.strand = og_entity.strand
+              ON gp_entity.gene_key = og_entity.gene_key
             JOIN pathway_reference pr_entity
               ON pr_entity.pathway_key = gp_entity.pathway_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
@@ -1704,11 +1669,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_subsystems gs_entity
-              ON gs_entity.genome_key = og_entity.genome_key
-             AND gs_entity.contig_id = og_entity.contig_id
-             AND gs_entity.gene_start = og_entity.start
-             AND gs_entity.gene_end = og_entity.end
-             AND gs_entity.strand = og_entity.strand
+              ON gs_entity.gene_key = og_entity.gene_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
               AND gs_entity.subsystem_key = ?
           )
@@ -1718,11 +1679,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_subsystems gs_entity
-              ON gs_entity.genome_key = og_entity.genome_key
-             AND gs_entity.contig_id = og_entity.contig_id
-             AND gs_entity.gene_start = og_entity.start
-             AND gs_entity.gene_end = og_entity.end
-             AND gs_entity.strand = og_entity.strand
+              ON gs_entity.gene_key = og_entity.gene_key
             JOIN subsystem_reference sr_entity
               ON sr_entity.subsystem_key = gs_entity.subsystem_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
@@ -1734,11 +1691,7 @@ def occurrence_entity_predicate(entity_type):
             SELECT 1
             FROM occurrence_genes og_entity
             JOIN gene_subsystems gs_entity
-              ON gs_entity.genome_key = og_entity.genome_key
-             AND gs_entity.contig_id = og_entity.contig_id
-             AND gs_entity.gene_start = og_entity.start
-             AND gs_entity.gene_end = og_entity.end
-             AND gs_entity.strand = og_entity.strand
+              ON gs_entity.gene_key = og_entity.gene_key
             WHERE og_entity.occurrence_id = occ.occurrence_id
               AND gs_entity.role_key = ?
           )
@@ -1793,11 +1746,7 @@ def occurrence_search_predicate():
         SELECT 1
         FROM occurrence_genes og_search
         JOIN gene_pathways gp_search
-          ON gp_search.genome_key = og_search.genome_key
-         AND gp_search.contig_id = og_search.contig_id
-         AND gp_search.gene_start = og_search.start
-         AND gp_search.gene_end = og_search.end
-         AND gp_search.strand = og_search.strand
+          ON gp_search.gene_key = og_search.gene_key
         JOIN pathway_reference pr_search
           ON pr_search.pathway_key = gp_search.pathway_key
         JOIN matched_entities me_search
@@ -1819,11 +1768,7 @@ def occurrence_search_predicate():
         SELECT 1
         FROM occurrence_genes og_search
         JOIN gene_subsystems gs_search
-          ON gs_search.genome_key = og_search.genome_key
-         AND gs_search.contig_id = og_search.contig_id
-         AND gs_search.gene_start = og_search.start
-         AND gs_search.gene_end = og_search.end
-         AND gs_search.strand = og_search.strand
+          ON gs_search.gene_key = og_search.gene_key
         JOIN subsystem_reference sr_search
           ON sr_search.subsystem_key = gs_search.subsystem_key
         JOIN matched_entities me_search
@@ -2141,6 +2086,7 @@ async def get_occurrence(db, occurrence_id, highlight_gene_id=None):
         db,
         """
         SELECT
+          og.gene_key,
           og.occurrence_id,
           og.genome_key,
           og.peg_num,
@@ -2172,9 +2118,10 @@ async def get_occurrence(db, occurrence_id, highlight_gene_id=None):
     for row in rows:
         row["gene_id"] = f"{occurrence['genome_id']}.peg.{row['peg_num']}"
         row["pgfam_display"] = format_pgfam(row["pgfam_num"])
-        key = gene_annotation_key(row)
+        key = int(row["gene_key"])
         row["pathways"] = pathways_by_gene.get(key, [])
         row["subsystems"] = subsystems_by_gene.get(key, [])
+        row.pop("gene_key", None)
         row["highlighted"] = row["gene_id"] == highlight_gene_id
         if row["highlighted"]:
             matched_highlight = row["gene_id"]
@@ -2212,16 +2159,8 @@ async def browse_genomes(db, page, search, sort):
           gi.genome_key,
           gi.genome_id,
           gi.organism_name,
-          (
-            SELECT COUNT(*)
-            FROM occurrences occ
-            WHERE occ.genome_key = gi.genome_key
-          ) AS operon_count,
-          (
-            SELECT COALESCE(SUM(occ.gene_count), 0)
-            FROM occurrences occ
-            WHERE occ.genome_key = gi.genome_key
-          ) AS gene_count
+          gi.operon_count,
+          gi.gene_count
         FROM genomes gi
         {where_sql}
         ORDER BY {sort_column} {sort_direction}, gi.genome_key ASC
@@ -2247,7 +2186,9 @@ async def get_genome(db, genome_key):
         SELECT
           genome_key,
           genome_id,
-          organism_name
+          organism_name,
+          operon_count,
+          gene_count
         FROM genomes
         WHERE genome_key = ?
         """,
@@ -2256,24 +2197,6 @@ async def get_genome(db, genome_key):
     if genome is None:
         return None
 
-    genome["operon_count"] = await run_scalar(
-        db,
-        """
-        SELECT COUNT(*) AS operon_count
-        FROM occurrences
-        WHERE genome_key = ?
-        """,
-        (genome_key,),
-    )
-    genome["gene_count"] = await run_scalar(
-        db,
-        """
-        SELECT COALESCE(SUM(gene_count), 0) AS gene_count
-        FROM occurrences
-        WHERE genome_key = ?
-        """,
-        (genome_key,),
-    )
     return genome
 
 

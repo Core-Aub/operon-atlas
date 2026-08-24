@@ -8,11 +8,13 @@
     "pages:dev": "npx wrangler pages dev frontend --service API_WORKER=operonatlas-api --port 8080",
 
     "db:prepare-full": "python tools/prepare_database.py full",
-    "db:seed:remote": "npx wrangler d1 execute DB --remote --config worker/wrangler.toml --file .wrangler/imports/operon_atlas_full.sql",
+    "db:audit:sample": "python tools/audit_query_plans.py database/operon_atlas_sample.db",
+    "db:audit:full": "python tools/audit_query_plans.py database/operon_atlas.db",
+    "db:seed-full:local": "bash tools/seed_d1_parts.sh local",
+    "db:seed:remote": "bash tools/seed_d1_parts.sh remote",
     "r2:prepare-full": "python tools/build_download_release.py --db database/operon_atlas.db --output downloads/operon_atlas_full --release 1.1.0 --overwrite",
     "r2:seed:remote": "sh tools/seed_remote_r2_downloads_s3.sh",
 
-    "db:verify:remote": "sh tools/verify_remote_d1.sh",
     "r2:verify:remote": "sh tools/verify_remote_r2_release_s3.sh",
     "smoke:api": "node tools/smoke-api.mjs http://127.0.0.1:8787",
     "smoke:pages": "node tools/smoke-api.mjs http://127.0.0.1:8080"

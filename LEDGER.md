@@ -171,3 +171,21 @@ It is not a changelog. Routine code changes, styling adjustments, refactors, and
 - Wrangler 4.123.0 rejected a 2.256 GB local SQL input before import because it exceeded 2 GiB, and an annotation-heavy insert capped at 512 KB later produced `SQLITE_TOOBIG`. The final exporter therefore caps statements at 90,000 bytes and provides a 2,235,598,136-byte canonical SQL file plus 23 checksummed parts below 100 MB. By owner decision, full-size data/search validation runs against SQLite while D1 import/API/UI logic is proven with the canonical sample, avoiding a redundant hours-long full local Wrangler import.
 - Generated and independently validated release 1.1.0 archives: 1,854,929 family rows, 5,067,861 occurrence rows, and 15,335,420 gene rows. Family downloads include taxonomy headline counts and unclassified coverage, not repeated delimited phylum/genus distributions.
 - Kept the compare-region viewer postponed. Release 1.1.0 adds no comparison schema, API, or frontend placeholder.
+
+---
+
+## 2026-08-24 — Replace the monolithic full D1 import with ordered table parts
+
+- Supersedes the 2026-08-23 decision to retain one multi-gigabyte canonical D1 SQL file. Although the file was below Cloudflare's nominal import-size limit, full upload attempts produced SQL memory errors; practical importer behavior, rather than the object-size ceiling alone, determines the release format.
+- `db:prepare-full` now writes 33 dependency-ordered SQL files under `.wrangler/imports/operon_atlas_full_parts/`: schema first, related reference/family tables together, large occurrence/gene/annotation/search groups split between complete statements, build metadata near the end, and all explicit indexes last.
+- Each file is capped at 95,000,000 bytes and each SQL statement remains capped at 90,000 bytes. Release 1.1.0 generated 2,235,440,604 SQL bytes in total; its largest part is 94,999,524 bytes. A manifest and SHA-256 list make the generated set independently checkable.
+- `db:seed-full:local` and `db:seed:remote` execute the exact same checked files sequentially. The seeder reports each filename and size before execution and passes Wrangler `--yes` so unattended multi-part imports do not stop for repeated confirmations. Routine application work still uses the faster canonical sample fixture.
+
+---
+
+## 2026-08-24 — Normalize gene evidence and make the final D1 import memory-safe
+
+- Supersedes the preceding post-load-index ordering. Remote table-part imports succeeded, but constructing the populated-table indexes afterward failed with `SQLITE_NOMEM`; retained explicit indexes are now created against empty tables and maintained incrementally during dependency-ordered inserts, with `PRAGMA optimize` as the final operation.
+- The full `(genome, contig, start, end, strand)` identity was verified unique for all 15,335,420 occurrence genes. A deterministic dense `gene_key` in `(occurrence_id, peg_num)` order now lives on `occurrence_genes`, and pathway/subsystem evidence references it directly. Exact relationship counts and digests plus normalized TSV hashes prove the legacy coordinate associations were preserved.
+- Precomputed immutable per-genome occurrence and gene totals replace repeated aggregates. The redundant gene-annotation indexes and the unusable leading-wildcard product/search-text B-tree indexes were removed; the 15 retained explicit indexes are enforced by representative Worker query-plan checks, including the operon browse sort paths and implicit PK/UNIQUE indexes.
+- FTS5 remains deferred: the 131,420-row catalog lookup was already fast, while broad annotation-to-family expansion—not text discovery—dominates expensive searches. Adding FTS storage and write complexity would not address that expansion cost.

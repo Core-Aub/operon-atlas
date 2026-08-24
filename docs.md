@@ -167,7 +167,8 @@ Allowed entity types are `product`, `pgfam`, `ec`, `pathway`, `pathway_class`, `
 - Gene IDs are reconstructed as `<genome_id>.peg.<peg_num>`.
 - Coordinate feature IDs are resolved through genome, contig, start, end, and strand; they are not copied into a large text table.
 - Occurrence genes are ordered by contig and start coordinate.
-- Pathway and subsystem annotations are joined to genes by genome, contig, coordinates, and strand. Genes without evidence return empty `pathways` and `subsystems` arrays.
+- Each occurrence gene has a deterministic dense `gene_key`, assigned in `(occurrence_id, peg_num)` order. `(occurrence_id, peg_num)` remains unique and is the stable external identity used to reconstruct gene IDs.
+- Pathway and subsystem annotations reference `gene_key`. The release-normalization manifest proves that these relationships are identical to the legacy full `(genome, contig, start, end, strand)` associations; that coordinate identity must remain unique and must not be loosened. Genes without evidence return empty `pathways` and `subsystems` arrays.
 
 ### Caching and rate limiting
 
@@ -193,8 +194,8 @@ The central entities are:
 
 - `operons`: stable PGFam-multiset families;
 - `occurrences`: genome-specific instances linked to a family and genome;
-- `occurrence_genes`: ordered gene coordinates, strands, products, and PGFam assignments;
-- `genomes`, `contigs`, and `products`: normalized reference data;
+- `occurrence_genes`: deterministically keyed, ordered gene coordinates, strands, products, and PGFam assignments;
+- `genomes`, `contigs`, and `products`: normalized reference data, with per-genome operon and gene totals stored on `genomes`;
 - `gene_pathways` plus pathway reference tables: EC/pathway evidence;
 - `gene_subsystems` plus subsystem reference tables: BV-BRC/SEED subsystem evidence; and
 - `operon_function_*`, `operon_pathway_*`, and `operon_subsystem_*`: precomputed family-level functional summaries;
@@ -206,24 +207,21 @@ The complete schemas are `database/build_db.sql` and `database/build_sample_db.s
 
 ### Authoritative inputs
 
-For release 1.1.0, `database/data/` is the authoritative full input and `database/sample_data/` is its deterministic sample. The full input already contains exactly 5,067,861 same-contig occurrences, each with at least two genes and complete PGFam annotation. Family signatures are numerically sorted PGFam multisets: gene order is ignored, duplicate copies are preserved, and all existing OAF/OAO numeric IDs must remain unchanged.
+For release 1.1.0, `database/data/` is the authoritative full input and `database/sample_data/` is its deterministic sample. The full input already contains exactly 5,067,861 same-contig occurrences, each with at least two genes and complete PGFam annotation. Family signatures are numerically sorted PGFam multisets: gene order is ignored, duplicate copies are preserved, and all existing OAF/OAO numeric IDs must remain unchanged. Each input directory also contains `release_normalization.json`, which records legacy-source and normalized-output hashes, dense-key invariants, annotation relationship counts and digests, and genome-summary totals. Every routine rebuild hashes the four normalized authoritative TSVs and refuses inputs that differ from that transformation proof.
 
 Do not regenerate these rows from predictions, notebooks, Collab exports, or `features.tab` files for this release. New derived data is added as a new TSV in both input directories, then imported by both schema files. The taxonomy source snapshot is retained under `database/raw/taxonomy/`.
 
-The taxonomy acquisition and derivation tools are intentionally one-off data-maintenance tools, not npm commands used during every development cycle:
+Taxonomy and search support were added through one-off acquisition/derivation work. Those maintenance scripts are not part of the recurring development toolset; their validated outputs now live as authoritative additive TSVs in `database/data/` and `database/sample_data/`. The taxonomy snapshot was obtained through the official BV-BRC HTTP `/api/genome/` and `/api/taxonomy/` endpoints, not FTP. Future regeneration should be treated as a separately reviewed data-maintenance task rather than folded into `db:prepare-*`.
 
-1. `tools/download_bvbrc_taxonomy.py --plan` prints request and bandwidth estimates without network access.
-2. The same tool downloads through the official BV-BRC HTTP `/api/genome/` and `/api/taxonomy/` endpoints with checkpoints and frozen raw TSV responses. FTP is not used.
-3. `tools/build_operon_taxonomy.py` creates the taxonomy TSVs and reports their formatting, coverage, and consistency checks.
-4. `tools/generate_search_support.py` creates the additive search-support TSVs and reports its own checks.
+The tracked `tools/normalize_release_data.py` utility is the one-time, fail-closed transformer for the legacy coordinate-keyed 1.1.0 inputs. It reads the legacy database without modifying it, verifies the coordinate identity is unique, writes normalized TSVs to a new staging directory, and refuses to overwrite output. Routine builds consume the already-normalized authoritative TSVs and verify their manifest rather than repeating the legacy coordinate join.
 
-All Python commands must run in the `bio` environment. The maintenance generators use explicit paths and publish outputs only after their internal checks pass.
+All retained Python commands must run in the `bio` environment and use explicit input/output paths.
 
 Taxonomy counts use taxon IDs, never parsed organism names. Family-genome links are deduplicated before counting, so each genome, species, genus, and phylum contributes at most once per family. Nullable rank coverage is recorded explicitly. Complete phylum and paginated genus distributions are calculated from `genome_taxonomy` at query time to avoid a large materialized family-by-taxon table.
 
 ### Rebuilding SQLite databases
 
-Use `npm run db:prepare-sample` during development and `npm run db:prepare-full` when preparing production data. `tools/prepare_database.py` runs the appropriate schema against a temporary database, checks table coverage, row presence, foreign keys, and `PRAGMA integrity_check`, then replaces the canonical database only after those checks pass. It also writes the matching D1 import SQL and a count/size report under `.wrangler/imports/`.
+Use `npm run db:prepare-sample` during routine development and `npm run db:prepare-full` when preparing or fully testing production-sized data. `tools/prepare_database.py` runs the appropriate schema against a temporary database, checks table coverage, row presence, foreign keys, `PRAGMA integrity_check`, dense `gene_key` coverage, annotation relationship digests, and every precomputed genome total, then replaces the canonical database only after those checks pass. Sample preparation writes one D1 SQL file and report under `.wrangler/imports/`. Full preparation writes an ordered directory of table-based SQL parts, a manifest, and checksums under `.wrangler/imports/operon_atlas_full_parts/`.
 
 The build SQL drops and recreates application tables inside the temporary output, never inside the current canonical database. The previous database remains untouched if preparation fails.
 
@@ -237,7 +235,7 @@ When adding a table or index:
 4. Run the sample prepare/seed workflow and both smoke tests.
 5. When the feature is approved, run the full database and download preparation commands and inspect their reports before remote seeding.
 
-The D1 generator emits tables in dependency order, appends indexes, refuses unknown or missing tables, and caps SQL statements at 90,000 bytes. This explicit behavior is why a schema change must also update its table order.
+The D1 generator emits the schema, then the retained explicit indexes while the tables are empty, then tables in dependency order, and finally `PRAGMA optimize`. It refuses unknown or missing tables and caps SQL statements at 90,000 bytes. Full output is additionally capped at 95,000,000 bytes per file and is split only between complete statements. The SQLite build schemas retain local build pragmas and a final `ANALYZE` for reproducible planner audits; those statements are never copied into D1 SQL. This explicit behavior is why a schema change must also update its table order and logical split group.
 
 ### Preparing the full D1 import
 
@@ -247,19 +245,34 @@ Activate `bio`, then run:
 npm run db:prepare-full
 ```
 
-The prepared release 1.1.0 database is 3,604,107,264 bytes and its D1 SQL is 2,235,439,309 bytes. Both fit the project's 4.5 GB database target and [Cloudflare's 5 GiB D1 import-file limit](https://developers.cloudflare.com/d1/best-practices/import-export-data/). The remote seed therefore uses one SQL file; splitting is unnecessary. The 90 KB statement cap stays below D1's per-statement limit.
+The optimized release 1.1.0 database is 2,614,161,408 bytes, down from 3,604,107,264 bytes. Its D1 import contains 32 ordered SQL files totaling 2,060,633,301 bytes, down from 33 files and 2,235,440,604 bytes; the largest file is 94,994,221 bytes. The files are grouped as follows:
 
-Do not import the full database into local Wrangler during routine development. The sample D1 exercises the same schema, ordering, statements, Worker queries, and UI logic much faster.
+1. `01_schema.sql` drops application tables in reverse dependency order and recreates all tables.
+2. `02_indexes.sql` creates the 15 justified explicit indexes while every table is empty.
+3. `10_genomes.sql` loads genomes, products, and contigs.
+4. `20_operon_families_part_*.sql` loads families and family products.
+5. `30_operon_occurrences_part_*.sql` loads occurrences.
+6. `40_genes_part_*.sql` loads occurrence genes.
+7. `50_function_references.sql`, `51_gene_pathways_part_*.sql`, and `52_gene_subsystems_part_*.sql` load functional references and gene evidence.
+8. `60_operon_function_support_part_*.sql` loads family-level functional support.
+9. `70_taxonomy.sql` loads genome and family taxonomy summaries.
+10. `80_search_support_part_*.sql` loads reverse lookup and search catalog data.
+11. `90_build_info.sql` records the schema/data build metadata.
+12. `99_optimize.sql` runs bounded planner-statistics maintenance after all data is loaded.
+
+`manifest.json` records every file, size, SHA-256 digest, table group, expected table count, and import-stage ordering. `checksums.sha256` is verified before any seed begins. Keeping schema and indexes separate makes failures easier to identify, while chunking the largest table groups avoids the SQL memory errors observed with one multi-gigabyte input.
+
+To test the exact full import locally:
+
+```bash
+npm run db:seed-full:local
+```
+
+This sequentially executes the same 32 files used remotely and prints each filename and size before it starts. It can take substantially longer than the sample seed. Rerun `npm run db:seed:local` when you want to return local Wrangler state to the sample fixture.
 
 ## Testing and verification
 
-There is no application unit-test suite or frontend build step. `tools/tests/test_taxonomy_tools.py` provides focused standard-library tests for taxonomy parsing/reconciliation, while the canonical application checks are integration smoke tests against the standard sample D1.
-
-Run the focused Python checks inside `bio`:
-
-```bash
-python -m unittest discover -s tools/tests -v
-```
+There is no application unit-test suite or frontend build step. The canonical application checks are integration smoke tests against the standard sample D1.
 
 With the Worker running on port 8787:
 
@@ -275,7 +288,9 @@ npm run smoke:pages
 
 The smoke script verifies health, exact sample counts, representative family/occurrence/genome records, every genome sort mode, invalid-sort fallback, deterministic ordering, taxonomy breadth, every search entity category, exact OAF/OAO/gene/PATRIC/PGFam/taxon resolution, typed family filtering, result pagination, and occurrence-gene highlighting. Because it contains fixed sample IDs and counts, update it deliberately whenever the canonical sample fixture changes.
 
-Routine correctness and UI testing uses the sample fixture. The database preparation commands perform structural, foreign-key, integrity, and row-presence checks before publishing either database. Do not spend hours importing the full database into local Wrangler or running performance benchmarks during ordinary development unless a specific problem requires them.
+Run `npm run db:audit:sample` or `npm run db:audit:full` after schema/index changes. The audit checks the exact explicit-index allowlist, rejects redundant prefixes and removed indexes, and records representative Worker `EXPLAIN QUERY PLAN` output. Small scans/sorts over roughly 20,000 genomes are intentional; leading-wildcard product/catalog searches remain deliberate scans because ordinary B-tree indexes cannot serve them. FTS5 remains deferred.
+
+Routine correctness and UI testing uses the sample fixture. The database preparation commands perform structural, foreign-key, integrity, row-presence, normalization-digest, and precomputed-summary checks before publishing either database. Use `db:seed-full:local` when validating the production-sized D1 import itself; broad performance benchmarking remains optional.
 
 For frontend changes, manually verify at least:
 
@@ -320,7 +335,7 @@ The verifier first checks every local file against `checksums.sha256`, then comp
 
 AppleDouble `._*` metadata copies are not project inputs. Inventory and remove them, keep the ignore rules, and run `git fsck --full --no-reflogs` afterward when copies were present inside `.git`.
 
-Do not permanently delete other stale or failed artifacts. Use `tools/quarantine_files.py` to move reviewed items under `to_delete/<date>/` while preserving original relative paths. Its manifest records byte size, SHA-256, classification, reason, destination, and timestamp. The tool preflights all destinations before moving a multi-source batch so a collision cannot cause a partially manifested quarantine. Leave ambiguous Collab/raw inputs in place for owner review.
+Do not permanently delete other stale or failed artifacts. Move reviewed items under ignored `to_delete/<date>/` while preserving original relative paths, and add a manifest row containing the original path, destination, byte size, SHA-256, classification, reason, and timestamp. Leave ambiguous Collab/raw inputs in place for owner review.
 
 ## Deferred comparison view
 
@@ -367,21 +382,22 @@ Configure `DOWNLOAD_BASE_URL` as a Worker variable in Cloudflare. It must be an 
 
 ### Prepare and seed release 1.1.0 data
 
-Activate `bio`, prepare the canonical full artifacts, seed them, and verify the remote object/count coverage:
+Activate `bio`, prepare the canonical full artifacts, seed them, and verify the remote release objects:
 
 ```bash
 venv bio
 npm run db:prepare-full
 npm run db:seed:remote
-npm run db:verify:remote
 npm run r2:prepare-full
 npm run r2:seed:remote
 npm run r2:verify:remote
 ```
 
-`db:seed:remote` imports the single `.wrangler/imports/operon_atlas_full.sql` file into the `DB` binding configured in `worker/wrangler.toml`; it does not create a database or change a binding. Confirm that this binding points to the intended new database before running the command. The SQL rebuilds application tables, so never aim it at a database that must remain live and unchanged.
+`db:seed:remote` validates the full-parts checksums and then imports every `*.sql` file in lexical order into the `DB` binding configured in `worker/wrangler.toml`. Before every import it prints the file number, name, and byte/human-readable size. Wrangler is invoked with `--yes`, so it does not pause for confirmation on every part. The command does not create a database or change a binding. Confirm that `DB` points to the intended new database before running it: `01_schema.sql` drops and recreates the application tables, so never aim it at a database that must remain live and unchanged.
 
-The full D1 SQL is about 2.24 GB, below Cloudflare's 5 GiB import-file limit, so it is not split. The largest release archive is about 698 MB, above [Wrangler's 315 MB direct R2 upload limit](https://developers.cloudflare.com/r2/objects/upload-objects/); `r2:seed:remote` therefore uses `rclone` and the configured `r2` remote.
+If any part fails, stop and inspect that failure. The seeder deliberately has no automatic skip/resume mode; the safest clean retry is against a fresh database or by rerunning from `01_schema.sql`, ensuring that later tables are never imported over a partially assembled database.
+
+The largest release archive is about 698 MB, above [Wrangler's 315 MB direct R2 upload limit](https://developers.cloudflare.com/r2/objects/upload-objects/); `r2:seed:remote` therefore uses `rclone` and the configured `r2` remote.
 
 ### Deploy the Worker and Pages
 
@@ -447,4 +463,4 @@ Confirm the Worker is running on port 8787 before starting Pages, and that the `
 
 ### A new database table is missing in D1
 
-Add the table and TSV import to both SQLite build scripts, add it to `TABLE_ORDER` in `tools/prepare_d1_import.py`, then rerun `db:prepare-sample` and `db:seed:local`.
+Add the table and TSV import to both SQLite build scripts, add it to `TABLE_ORDER` and the appropriate `IMPORT_GROUPS` entry in `tools/prepare_d1_import.py`, then rerun `db:prepare-sample` and `db:seed:local`.

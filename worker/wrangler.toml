@@ -14,7 +14,7 @@ cpu_ms = 1000
 [[d1_databases]]
 binding = "DB"
 database_name = "operon_atlas_1_1_0"
-database_id = "bbe6b18b-4980-4428-9af3-b506d51268c3"
+database_id = "7e7f68b3-f1b5-4178-8f58-35f6c9d80afd"
 
 [[r2_buckets]]
 binding = "DOWNLOADS"
