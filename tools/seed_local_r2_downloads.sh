@@ -2,7 +2,7 @@
 set -eu
 
 BUCKET="operonatlas-downloads"
-PREFIX="releases/1.0.0"
+PREFIX="releases/1.1.0"
 STATE_DIR=".wrangler/state"
 SOURCE_DIR="downloads/operon_atlas_sample"
 
@@ -11,3 +11,4 @@ npx wrangler r2 object put "$BUCKET/$PREFIX/data_dictionary.tsv" --local --persi
 npx wrangler r2 object put "$BUCKET/$PREFIX/operon_families.tsv.gz" --local --persist-to "$STATE_DIR" --file "$SOURCE_DIR/operon_families.tsv.gz"
 npx wrangler r2 object put "$BUCKET/$PREFIX/operon_occurrences.tsv.gz" --local --persist-to "$STATE_DIR" --file "$SOURCE_DIR/operon_occurrences.tsv.gz"
 npx wrangler r2 object put "$BUCKET/$PREFIX/operon_occurrence_genes.tsv.gz" --local --persist-to "$STATE_DIR" --file "$SOURCE_DIR/operon_occurrence_genes.tsv.gz"
+npx wrangler r2 object put "$BUCKET/$PREFIX/checksums.sha256" --local --persist-to "$STATE_DIR" --file "$SOURCE_DIR/checksums.sha256"

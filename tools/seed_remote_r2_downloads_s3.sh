@@ -8,7 +8,7 @@ if [ "${1:-}" = "--dry-run" ]; then
 fi
 
 SOURCE_DIR="${1:-downloads/operon_atlas_full}"
-DESTINATION="r2:releases/1.0.0/"
+DESTINATION="r2:releases/1.1.0/"
 TRANSFERS="4"
 CHECKERS="8"
 UPLOAD_CONCURRENCY="4"
