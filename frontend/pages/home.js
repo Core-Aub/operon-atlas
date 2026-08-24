@@ -3,6 +3,7 @@ import { app } from "../dom.js";
 import { isCurrentRoute } from "../routing/route-state.js";
 import { escapeHtml } from "../utils/html.js";
 import { formatNumber } from "../utils/format.js";
+import { renderGlobalSearchForm } from "./search.js?v=1";
 
 export async function renderHome(routeKey) {
   app.innerHTML = `
@@ -16,6 +17,18 @@ export async function renderHome(routeKey) {
         this interface allows browsing predicted operons, genomes, and gene-level operon
         structures. These are predicted operons, not experimentally validated operons.
       </p>
+    </section>
+
+    <section class="section home-section home-search-section">
+      <div class="section-header">
+        <h2>Find operon families</h2>
+      </div>
+      <div class="panel home-panel home-search-panel">
+        <div class="panel-body">
+          <p>Start with a gene ID, product, PGFam, EC number, pathway, subsystem, genome, or taxon.</p>
+          ${renderGlobalSearchForm("", { compact: true })}
+        </div>
+      </div>
     </section>
 
     <section class="section home-section">

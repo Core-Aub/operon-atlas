@@ -28,11 +28,20 @@ import {
 let currentGeneViewerGenes = [];
 let currentGeneViewerStart = 0;
 let currentGeneViewerSize = GENE_VIEWER_MIN_SIZE;
+let currentHighlightedGene = "";
 
-export function setGeneViewerGenes(genes) {
+export function setGeneViewerGenes(genes, highlightedGene = "") {
   currentGeneViewerGenes = Array.isArray(genes) ? genes : [];
-  currentGeneViewerStart = 0;
   currentGeneViewerSize = GENE_VIEWER_MIN_SIZE;
+  currentHighlightedGene = String(highlightedGene || "").trim();
+  const highlightedIndex = currentGeneViewerGenes.findIndex(isHighlightedGene);
+  currentGeneViewerStart = highlightedIndex < 0
+    ? 0
+    : clamp(
+        highlightedIndex - Math.floor(currentGeneViewerSize / 2),
+        0,
+        Math.max(0, currentGeneViewerGenes.length - currentGeneViewerSize),
+      );
 }
 
 export function renderGeneViewer(genes = currentGeneViewerGenes) {
@@ -40,7 +49,7 @@ export function renderGeneViewer(genes = currentGeneViewerGenes) {
     return `<div class="empty">No genes found for this operon.</div>`;
   }
 
-  const end = Math.min(currentGeneViewerSize, genes.length);
+  const end = Math.min(currentGeneViewerStart + currentGeneViewerSize, genes.length);
   const hasNext = currentGeneViewerStart < getMaxGeneViewerStart();
   return `
     <div class="gene-viewer-toolbar">
@@ -53,11 +62,11 @@ export function renderGeneViewer(genes = currentGeneViewerGenes) {
       </div>
       <div class="viewer-status-group">
         <span class="viewer-status gene-contig-status" data-gene-contig-status>${escapeHtml(formatGeneViewerContigLabel())}</span>
-        <span class="viewer-status" data-gene-status>Genes 1-${end} of ${genes.length}</span>
+        <span class="viewer-status" data-gene-status>Genes ${currentGeneViewerStart + 1}-${end} of ${genes.length}</span>
       </div>
     </div>
     <div class="gene-window" data-gene-window>
-      ${renderGeneWindow(genes, 0)}
+      ${renderGeneWindow(genes, currentGeneViewerStart)}
     </div>
   `;
 }
@@ -133,8 +142,9 @@ function renderGeneArrow(gene, localIndex, x, width, centerLineY, arrowHeight) {
     ? `<text class="gene-label gene-label-forward" x="${formatSvgNumber(x + 4)}" y="${formatSvgNumber(y - 7)}">${escapeHtml(gene.gene_id)}</text>`
     : `<text class="gene-label gene-label-reverse" x="${formatSvgNumber(x + width - 4)}" y="${formatSvgNumber(y + arrowHeight + 16)}" text-anchor="end">${escapeHtml(gene.gene_id)}</text>`;
 
+  const highlightClass = isHighlightedGene(gene) ? " gene-arrow-highlight" : "";
   return `
-    <polygon class="gene-arrow gene-color-${colorIndex}" points="${pointString}">
+    <polygon class="gene-arrow gene-color-${colorIndex}${highlightClass}" points="${pointString}">
       <title>${escapeHtml(gene.gene_id)}</title>
     </polygon>
     ${label}
@@ -145,7 +155,7 @@ function renderGeneRow(gene, showContigInPosition = false) {
   const geneLabel = formatGeneLabel(gene);
   const position = formatGenePosition(gene, showContigInPosition);
   return `
-    <tr>
+    <tr class="${isHighlightedGene(gene) ? "gene-row-highlight" : ""}">
       <td class="gene-name">
         <span title="${escapeHtml(gene.gene_id || geneLabel)}">${escapeHtml(geneLabel)}</span>
       </td>
@@ -155,6 +165,17 @@ function renderGeneRow(gene, showContigInPosition = false) {
       <td class="numeric">${escapeHtml(formatGeneLength(gene))}</td>
     </tr>
   `;
+}
+
+function isHighlightedGene(gene) {
+  if (!currentHighlightedGene) {
+    return false;
+  }
+  const geneId = String(gene?.gene_id || "");
+  const pegNum = String(gene?.peg_num ?? "");
+  return geneId === currentHighlightedGene
+    || pegNum === currentHighlightedGene
+    || geneId.endsWith(`.peg.${currentHighlightedGene}`);
 }
 
 export function renderGeneTableRows(genes = getVisibleGeneViewerGenes()) {

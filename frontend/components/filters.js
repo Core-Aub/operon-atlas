@@ -4,6 +4,7 @@ import {
   FILTER_TEXT_MAX_LENGTH,
   OPERON_FILTER_MAX,
   OPERON_FILTER_MIN,
+  OPERON_ENTITY_TYPES,
   OPERON_SORT_FIELDS,
 } from "../config.js";
 import { app } from "../dom.js";
@@ -129,13 +130,34 @@ export function getOperonFilters(params) {
   const genomeKey = sanitizeGenomeKey(params.get("genome_key"));
   const organism = sanitizeFilterText(params.get("organism") || params.get("organism_name"));
   const product = sanitizeFilterText(params.get("product"));
+  const search = sanitizeFilterText(params.get("search"));
+  const entityTypeValue = sanitizeFilterText(params.get("entity_type"));
+  const entityKeyValue = Number.parseInt(params.get("entity_key"), 10);
+  const entityType = OPERON_ENTITY_TYPES.has(entityTypeValue) ? entityTypeValue : "";
+  const entityKey = entityType && Number.isFinite(entityKeyValue) && entityKeyValue > 0
+    ? entityKeyValue
+    : null;
   const sort = getOperonSort(params);
-  return { minGeneCount, maxGeneCount, genomeKey, organism, product, ...sort };
+  return {
+    minGeneCount,
+    maxGeneCount,
+    genomeKey,
+    organism,
+    product,
+    search,
+    entityType: entityKey === null ? "" : entityType,
+    entityKey,
+    ...sort,
+  };
 }
 
 export function getOccurrenceFilters(params) {
+  const operonFilters = getOperonFilters(params);
   return {
     product: sanitizeFilterText(params.get("product")),
+    search: operonFilters.search,
+    entityType: operonFilters.entityType,
+    entityKey: operonFilters.entityKey,
   };
 }
 
@@ -149,6 +171,7 @@ export function getGenomeOperonFilters(params) {
 }
 
 export function getFilterValuesFromDom() {
+  const routeParams = parseHash().params;
   const minInput = app.querySelector('[data-filter-field="min_genes"]');
   const maxInput = app.querySelector('[data-filter-field="max_genes"]');
   const organismSelect = app.querySelector('[data-filter-field="organism"]');
@@ -164,14 +187,22 @@ export function getFilterValuesFromDom() {
     genomeKey: null,
     organism: sanitizeFilterText(organismSelect?.value),
     product: sanitizeFilterText(productInput?.value),
-    ...getOperonSort(parseHash().params),
+    search: sanitizeFilterText(routeParams.get("search")),
+    entityType: getOperonFilters(routeParams).entityType,
+    entityKey: getOperonFilters(routeParams).entityKey,
+    ...getOperonSort(routeParams),
   };
 }
 
 export function getOccurrenceFilterValuesFromDom() {
+  const routeParams = parseHash().params;
+  const filters = getOccurrenceFilters(routeParams);
   const productInput = app.querySelector('[data-filter-field="product"]');
   return {
     product: sanitizeFilterText(productInput?.value),
+    search: filters.search,
+    entityType: filters.entityType,
+    entityKey: filters.entityKey,
   };
 }
 
@@ -186,6 +217,7 @@ export function getOperonOccurrencePagerParams(filters) {
   if (filters.product) {
     params.set("product", filters.product);
   }
+  addSearchEntityParams(params, filters);
   return params;
 }
 
@@ -286,6 +318,7 @@ export function buildOperonApiQuery(page, filters) {
   if (filters.product) {
     params.set("product", filters.product);
   }
+  addSearchEntityParams(params, filters);
   return params.toString();
 }
 
@@ -303,6 +336,7 @@ export function getOperonPagerParams(filters) {
   if (filters.product) {
     params.set("product", filters.product);
   }
+  addSearchEntityParams(params, filters);
   return params;
 }
 
@@ -322,12 +356,23 @@ export function setOperonRoute(page, filters, includeFilters = true) {
     if (filters.product) {
       params.set("product", filters.product);
     }
+    addSearchEntityParams(params, filters);
   }
   const nextHash = `#operons?${params.toString()}`;
   if (window.location.hash === nextHash) {
     window.dispatchEvent(new Event("hashchange"));
   } else {
     window.location.hash = nextHash;
+  }
+}
+
+export function addSearchEntityParams(params, filters) {
+  if (filters.search) {
+    params.set("search", filters.search);
+  }
+  if (filters.entityType && filters.entityKey !== null) {
+    params.set("entity_type", filters.entityType);
+    params.set("entity_key", String(filters.entityKey));
   }
 }
 
@@ -401,10 +446,18 @@ function clearCurrentFilterRoute() {
     genomeKey: null,
     organism: "",
     product: "",
+    search: "",
+    entityType: "",
+    entityKey: null,
     ...getOperonSort(params),
   };
   if (parts[0] === "operons" && parts.length === 2) {
-    setOperonDetailRoute(parts[1], 1, { product: "" }, false);
+    setOperonDetailRoute(parts[1], 1, {
+      product: "",
+      search: "",
+      entityType: "",
+      entityKey: null,
+    }, false);
     return;
   }
   if (parts[0] === "genomes" && parts.length === 2) {

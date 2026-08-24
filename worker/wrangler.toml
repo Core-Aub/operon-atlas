@@ -8,13 +8,13 @@ compatibility_flags = ["python_workers", "disable_python_external_sdk"]
 [vars]
 DOWNLOAD_BASE_URL = "https://downloads.operonatlas.org"
 
-# [limits]
-# cpu_ms = 1000
+[limits]
+cpu_ms = 1000
 
 [[d1_databases]]
 binding = "DB"
-database_name = "operon_atlas_sample"
-database_id = "2c8de36e-0c8b-4ab5-8d1c-c08e0aef9877"
+database_name = "operon_atlas_1_1_0"
+database_id = "bbe6b18b-4980-4428-9af3-b506d51268c3"
 
 [[r2_buckets]]
 binding = "DOWNLOADS"

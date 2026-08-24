@@ -4,20 +4,25 @@ from urllib.parse import parse_qs, urlparse
 from workers import Response
 
 from db import (
+    ValidationError,
     browse_genomes,
     browse_operons,
     get_genome,
     get_genome_viewer,
     get_occurrence,
     get_operon,
+    get_operon_taxonomy,
     genome_operons,
     organisms,
     parse_genome_search,
     parse_genome_sort,
+    parse_gene_highlight,
     parse_occurrence_filters,
     parse_operon_filters,
     parse_operon_sort,
     parse_page,
+    parse_search_request,
+    search,
     stats,
 )
 from downloads import (
@@ -73,12 +78,19 @@ async def route_request(request, env):
 
     try:
         return await route_api(path_parts, query, page, db)
+    except ValidationError as exc:
+        return json_response({"error": str(exc)}, 400)
     except Exception as exc:
         print(f"Database request failed: {exc}")
         return json_response({"error": "Database error"}, 500)
 
 
 async def route_api(path_parts, query, page, db):
+    if path_parts == ["api", "search"]:
+        return json_response(
+            await search(db, page, parse_search_request(query))
+        )
+
     if path_parts == ["api", "stats"]:
         return json_response(
             await stats(db),
@@ -101,6 +113,19 @@ async def route_api(path_parts, query, page, db):
             )
         )
 
+    if (
+        len(path_parts) == 4
+        and path_parts[:2] == ["api", "operons"]
+        and path_parts[3] == "taxonomy"
+    ):
+        operon_id = parse_int(path_parts[2])
+        if operon_id is None:
+            return json_response({"error": "Invalid operon_id"}, 400)
+        payload = await get_operon_taxonomy(db, operon_id, page)
+        if payload is None:
+            return json_response({"error": "Stable operon not found"}, 404)
+        return json_response(payload)
+
     if len(path_parts) == 3 and path_parts[:2] == ["api", "operons"]:
         operon_id = parse_int(path_parts[2])
         if operon_id is None:
@@ -114,7 +139,11 @@ async def route_api(path_parts, query, page, db):
         occurrence_id = parse_int(path_parts[2])
         if occurrence_id is None:
             return json_response({"error": "Invalid occurrence_id"}, 400)
-        payload = await get_occurrence(db, occurrence_id)
+        payload = await get_occurrence(
+            db,
+            occurrence_id,
+            parse_gene_highlight(query),
+        )
         if payload is None:
             return json_response({"error": "Occurrence not found"}, 404)
         return json_response(payload)

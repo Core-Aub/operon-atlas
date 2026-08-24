@@ -2,7 +2,7 @@ import json
 from urllib.parse import quote
 
 
-DOWNLOAD_RELEASE = "1.0.0"
+DOWNLOAD_RELEASE = "1.1.0"
 DOWNLOAD_PREFIX = f"releases/{DOWNLOAD_RELEASE}/"
 DOWNLOAD_MANIFEST_KEY = f"{DOWNLOAD_PREFIX}downloads_manifest.json"
 

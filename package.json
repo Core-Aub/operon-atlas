@@ -1,17 +1,19 @@
 {
   "scripts": {
-    "db:prepare-sample": "sh tools/prepare-d1-import.sh",
-    "db:prepare-full": "sh tools/prepare-d1-full-import.sh",
-    "db:seed:local": "cd worker && npx wrangler d1 execute operon_atlas_sample --local --persist-to ../.wrangler/state --file ../.wrangler/imports/operon_atlas_sample.sql",
-    "db:seed:remote": "cd worker && npx wrangler d1 execute operon_atlas_sample --remote --file ../.wrangler/imports/operon_atlas_sample.sql",
+    "db:prepare-sample": "python tools/prepare_database.py sample",
+    "db:seed:local": "npx wrangler d1 execute DB --local --config worker/wrangler.toml --persist-to .wrangler/state --file .wrangler/imports/operon_atlas_sample.sql",
+    "r2:prepare-sample": "python tools/build_download_release.py --db database/operon_atlas_sample.db --output downloads/operon_atlas_sample --release 1.1.0 --overwrite",
     "r2:seed:local": "sh tools/seed_local_r2_downloads.sh",
-    "r2:seed:remote": "sh tools/seed_remote_r2_downloads.sh",
-    "r2:seed-full:remote:dry-run": "sh tools/seed_remote_r2_downloads_s3.sh --dry-run downloads/operon_atlas_full",
-    "r2:seed-full:remote": "sh tools/seed_remote_r2_downloads_s3.sh downloads/operon_atlas_full",
     "worker:dev": "cd worker && npx wrangler dev --local --persist-to ../.wrangler/state --port 8787",
-    "worker:deploy": "cd worker && npx wrangler deploy",
-    "worker:deploy:dry-run": "cd worker && npx wrangler deploy --dry-run",
     "pages:dev": "npx wrangler pages dev frontend --service API_WORKER=operonatlas-api --port 8080",
+
+    "db:prepare-full": "python tools/prepare_database.py full",
+    "db:seed:remote": "npx wrangler d1 execute DB --remote --config worker/wrangler.toml --file .wrangler/imports/operon_atlas_full.sql",
+    "r2:prepare-full": "python tools/build_download_release.py --db database/operon_atlas.db --output downloads/operon_atlas_full --release 1.1.0 --overwrite",
+    "r2:seed:remote": "sh tools/seed_remote_r2_downloads_s3.sh",
+
+    "db:verify:remote": "sh tools/verify_remote_d1.sh",
+    "r2:verify:remote": "sh tools/verify_remote_r2_release_s3.sh",
     "smoke:api": "node tools/smoke-api.mjs http://127.0.0.1:8787",
     "smoke:pages": "node tools/smoke-api.mjs http://127.0.0.1:8080"
   }

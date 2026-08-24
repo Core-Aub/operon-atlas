@@ -8,7 +8,11 @@ import {
   handleGenomeSearchSubmit,
 } from "./pages/genomes.js";
 import { handleReturnClick } from "./routing/navigation.js";
-import { renderRoute } from "./routing/router.js?v=12";
+import { renderRoute } from "./routing/router.js?v=13";
+import {
+  handleGlobalSearchClear,
+  handleGlobalSearchSubmit,
+} from "./pages/search.js?v=1";
 import { handleGeneViewerClick } from "./viewers/gene-viewer.js";
 import { handleGenomeViewerClick } from "./viewers/genome-viewer.js";
 
@@ -19,5 +23,7 @@ app.addEventListener("click", handleGenomeViewerClick);
 app.addEventListener("click", handleFilterClick);
 app.addEventListener("click", handleReturnClick);
 app.addEventListener("click", handleGenomeSearchClear);
+app.addEventListener("click", handleGlobalSearchClear);
 app.addEventListener("submit", handleGenomeSearchSubmit);
+app.addEventListener("submit", handleGlobalSearchSubmit);
 document.addEventListener("click", handleDocumentClick);

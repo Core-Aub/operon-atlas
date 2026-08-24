@@ -63,9 +63,9 @@ export function renderHelp(sectionId = "") {
         ${helpHeading("Getting started")}
         <div class="help-steps">
           ${helpStep("1", "Start with an operon family", `
-            Open <a href="#operons?page=1">Operons</a>. Use gene-count, organism, or product
-            filters to narrow the list, then select an <code>OAF</code> identifier to see the
-            family composition, functional summary, and matching occurrences.
+            Open <a href="#search">Search</a> and enter the biological entity you already know,
+            such as a gene ID, product, PGFam, EC number, pathway, subsystem, genome, or taxon.
+            Select a result to reach all matching operon families and occurrences.
           `)}
           ${helpStep("2", "Inspect a genome-specific occurrence", `
             Select an <code>OAO</code> identifier to view the predicted gene arrangement,
@@ -162,8 +162,9 @@ export function renderHelp(sectionId = "") {
         ${helpHeading("What each site view shows")}
         <div class="panel help-view-list">
           ${viewRow("Home", "Current dataset totals for genomes, operon families, occurrences, and occurrence-gene rows.", "#home")}
-          ${viewRow("Operons", "A sortable, filterable list of operon families with PGFam content, gene count, and occurrence count.", "#operons?page=1")}
-          ${viewRow("Operon family detail", "One family’s composition, annotation coverage, family-level functional evidence, and genome-specific occurrences.")}
+          ${viewRow("Search", "Grouped identifier, annotation, genome, and taxonomy matches with paginated paths to all matching families.", "#search")}
+          ${viewRow("Operons", "A sortable, filterable list of operon families with PGFam content, gene count, occurrence count, and compact taxonomic breadth.", "#operons?page=1")}
+          ${viewRow("Operon family detail", "One family’s composition, taxonomic breadth and distribution, annotation coverage, family-level functional evidence, and genome-specific occurrences.")}
           ${viewRow("Occurrence detail", "The genes and annotations for one predicted occurrence, including its operon diagram and gene table.")}
           ${viewRow("Genomes", "A searchable list of BV-BRC genomes with counts of predicted operons and operon-associated genes.", "#genomes?page=1")}
           ${viewRow("Genome detail", "A contig-based occurrence viewer and a sortable, filterable table of predicted operons in one genome.")}
@@ -183,6 +184,11 @@ export function renderHelp(sectionId = "") {
               </tr>
             </thead>
             <tbody>
+              <tr>
+                <td><a href="#search">Global search</a></td>
+                <td>Direct OAF, OAO, gene, feature, genome, PGFam, EC, pathway, subsystem, and taxon resolution; grouped annotation and taxonomy suggestions; paginated entity and family results.</td>
+                <td><code>fig|100.11.peg.328</code>, <code>PGF_08225224</code>, <code>EC 1.1.1.1</code>, <code>DNA repair</code>, or <code>Bacillus</code></td>
+              </tr>
               <tr>
                 <td><a href="#operons?page=1">Operons</a></td>
                 <td>Minimum and maximum gene count; genome ID or organism-name text; product text; sortable ID, gene count, and occurrence count.</td>
@@ -207,7 +213,9 @@ export function renderHelp(sectionId = "") {
           </table>
         </div>
         <p class="help-note">
-          Text controls use substring matching. Multiple active filters are combined, and applying
+          Search suggestions show five uncluttered previews per category; “View all” opens the full
+          20-per-page entity list, and selecting an entity opens every matching family with pagination.
+          Text controls use case-insensitive token/substring matching. Multiple active filters are combined, and applying
           or clearing filters returns the list to page 1. On the Operons and genome-detail views,
           the product filter selects families with at least one matching product annotation in the
           family data; on a family-detail page, it selects occurrences whose own genes match. Product
@@ -233,6 +241,10 @@ export function renderHelp(sectionId = "") {
           <div>
             <dt>Pathway and EC</dt>
             <dd>Pathway names, identifiers, classes, and Enzyme Commission numbers when available. Pathway IDs link to KEGG; EC numbers link to ExPASy.</dd>
+          </div>
+          <div>
+            <dt>Taxonomic breadth</dt>
+            <dd>Distinct genomes and distinct BV-BRC taxon IDs represented by a family at species, genus, and phylum rank. Repeated occurrences in the same genome or taxon are counted once.</dd>
           </div>
         </dl>
         <p>
@@ -264,7 +276,7 @@ export function renderHelp(sectionId = "") {
         ${helpHeading("Data scope and limitations")}
         <ul class="help-list">
           <li>The dataset is based on BV-BRC representative and reference bacterial genomes.</li>
-          <li>Only predicted occurrences with at least two genes and complete PGFam annotation are included.</li>
+          <li>Only same-contig predicted occurrences with at least two genes and complete PGFam annotation are included.</li>
           <li>Family membership uses PGFam composition and copy count, not gene order.</li>
           <li>Genome selection, gene prediction, product labels, PGFam assignments, and structured annotations inherit limitations and changes from their source data.</li>
           <li>Not every gene or occurrence has subsystem or pathway evidence.</li>

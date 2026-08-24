@@ -1,10 +1,11 @@
 import { app, navLinks } from "../dom.js";
 import { renderDownloads } from "../pages/downloads.js?v=1";
 import { renderGenomes, renderGenomeDetail } from "../pages/genomes.js?v=1";
-import { renderHelp } from "../pages/help.js?v=4";
-import { renderHome } from "../pages/home.js?v=1";
-import { renderOccurrenceDetail } from "../pages/occurrence.js?v=7";
-import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=7";
+import { renderHelp } from "../pages/help.js?v=5";
+import { renderHome } from "../pages/home.js?v=2";
+import { renderOccurrenceDetail } from "../pages/occurrence.js?v=8";
+import { renderOperons, renderOperonDetail } from "../pages/operons.js?v=8";
+import { renderSearch } from "../pages/search.js?v=1";
 import { getPage, parseHash } from "./hash.js";
 import {
   isCurrentRoute,
@@ -34,12 +35,14 @@ export async function renderRoute() {
       renderHelp(parts[1]);
     } else if (route === "downloads" && parts.length === 1) {
       await renderDownloads(routeKey);
+    } else if (route === "search" && parts.length === 1) {
+      await renderSearch(getPage(params), params, routeKey);
     } else if (route === "operons" && parts.length === 1) {
       await renderOperons(getPage(params), params, routeKey);
     } else if (route === "operons" && parts.length === 2) {
       await renderOperonDetail(parts[1], getPage(params), params, routeKey);
     } else if (route === "occurrences" && parts.length === 2) {
-      await renderOccurrenceDetail(parts[1], routeKey);
+      await renderOccurrenceDetail(parts[1], params, routeKey);
     } else if (route === "genomes" && parts.length === 1) {
       await renderGenomes(getPage(params), params, routeKey);
     } else if (route === "genomes" && parts.length === 2) {

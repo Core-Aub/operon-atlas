@@ -40,3 +40,17 @@ export const GENOME_OCCURRENCE_WIDTH_RATIO = 0.52;
 export const OPERON_FILTER_MIN = 1;
 export const OPERON_FILTER_MAX = 10000;
 export const FILTER_TEXT_MAX_LENGTH = 120;
+
+export const OPERON_ENTITY_TYPES = new Set([
+  "product",
+  "pgfam",
+  "ec",
+  "pathway",
+  "pathway_class",
+  "subsystem",
+  "subsystem_class",
+  "role",
+  "species",
+  "genus",
+  "phylum",
+]);

@@ -32,12 +32,18 @@ import {
   formatStableOperonId,
 } from "../utils/format.js";
 
-export async function renderOccurrenceDetail(occurrenceId, routeKey = getCurrentRouteKey()) {
-  const data = await fetchJson(`/api/occurrences/${encodeURIComponent(occurrenceId)}`);
+export async function renderOccurrenceDetail(
+  occurrenceId,
+  params = new URLSearchParams(),
+  routeKey = getCurrentRouteKey(),
+) {
+  const gene = params.get("gene") || "";
+  const geneQuery = gene ? `?gene=${encodeURIComponent(gene)}` : "";
+  const data = await fetchJson(`/api/occurrences/${encodeURIComponent(occurrenceId)}${geneQuery}`);
   if (!isCurrentRoute(routeKey)) {
     return;
   }
-  setGeneViewerGenes(data.genes || []);
+  setGeneViewerGenes(data.genes || [], data.highlightGeneId || gene);
   const functionalSummary = buildOccurrenceFunctionalSummary(data.genes || []);
 
   app.innerHTML = `
